@@ -45,7 +45,7 @@ def get_status():
         "people": people,
         "estimated_wait": f"{wait_time} minutes",
         "crowd_level": crowd,
-        "next_fresh_item": "5 minutes",
+        "next_fresh_item": "10 minutes",
         "closing_in": "30 minutes"
     }
 
