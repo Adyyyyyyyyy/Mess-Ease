@@ -1,8 +1,16 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request
 import json
 from utils import calculate_wait_time, get_user
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------- FILE HANDLING ----------
 def read_data():
@@ -42,12 +50,20 @@ def get_status():
         crowd = "High"
 
     return {
-        "people": people,
-        "estimated_wait": f"{wait_time} minutes",
-        "crowd_level": crowd,
-        "next_fresh_item": "10 minutes",
-        "closing_in": "30 minutes"
-    }
+    "people": people,
+    "estimated_wait": f"{wait_time} minutes",
+    "crowd_level": crowd,
+    "next_fresh_item": "10 minutes",
+    "closing_in": "30 minutes",
+    "history": [
+        {"time": "9AM", "people": 20},
+        {"time": "10AM", "people": 35},
+        {"time": "11AM", "people": 50},
+        {"time": "12PM", "people": 80},
+        {"time": "1PM", "people": 65},
+        {"time": "2PM", "people": 40}
+    ]
+}
 
 @app.get("/update-count")
 def update_count(people: int):
