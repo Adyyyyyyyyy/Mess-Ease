@@ -3,7 +3,7 @@ from ultralytics import YOLO
 
 model = YOLO("yolov8n.pt")
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture("http://10.60.81.72:4747/video")
 
 if not cap.isOpened():
     print("Error: Cannot open camera")
