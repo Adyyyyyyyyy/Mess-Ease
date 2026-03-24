@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
@@ -13,6 +14,7 @@ const cardStyle = {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate();
     const [data, setData] = useState({
   people: 0,
   estimated_wait: "",
@@ -55,22 +57,25 @@ useEffect(() => {
     Mess-Ease
   </h2>
 
-  <p style={{
+<p 
+  onClick={() => navigate("/")}
+  style={{
     padding: "10px",
     borderRadius: "8px",
     background: "#2f3542",
     cursor: "pointer"
-  }}>
-    📊 Dashboard
-  </p>
+  }}
+>
+  📊 Dashboard
+</p>
 
-  <p style={{ marginTop: "15px", cursor: "pointer" }}>
-    📈 Analytics
-  </p>
+  <p 
+  onClick={() => navigate("/analytics")}
+  style={{ marginTop: "15px", cursor: "pointer" }}
+>
+  📈 Analytics
+</p>
 
-  <p style={{ marginTop: "15px", cursor: "pointer" }}>
-    ⚙️ Settings
-  </p>
 </div>
 
     {/* Main Content */}

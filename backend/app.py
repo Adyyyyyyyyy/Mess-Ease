@@ -117,3 +117,4 @@ async def bot(request: Request):
     except Exception as e:
         print("🔥 ERROR:", str(e))
         return {"reply": "Server error"}
+
