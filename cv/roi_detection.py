@@ -9,20 +9,23 @@ if not cap.isOpened():
     print("Error: Cannot open camera")
     exit()
 
-# ROI coordinates (x1, y1) = top-left, (x2, y2) = bottom-right
-# These values are for a typical webcam frame (640x480)
-# We will adjust these based on your camera view
-ROI_X1, ROI_Y1 = 150, 100
-ROI_X2, ROI_Y2 = 500, 400
+# Get frame dimensions
+ret, sample_frame = cap.read()
+frame_height, frame_width = sample_frame.shape[:2]
+mid_x = frame_width // 2  # middle of frame
 
-def is_inside_roi(box, roi):
-    # Check if center of detected person is inside ROI
+# Zone coordinates
+# Left half = Girls, Right half = Boys
+GIRLS_ZONE = (0,       0, mid_x,        frame_height)
+BOYS_ZONE  = (mid_x,   0, frame_width,  frame_height)
+
+def get_zone(box):
     x1, y1, x2, y2 = box
-    cx = (x1 + x2) // 2  # center x of person box
-    cy = (y1 + y2) // 2  # center y of person box
-
-    rx1, ry1, rx2, ry2 = roi
-    return rx1 < cx < rx2 and ry1 < cy < ry2
+    cx = (x1 + x2) // 2  # center x of person
+    if cx < mid_x:
+        return "girls"
+    else:
+        return "boys"
 
 while True:
     ret, frame = cap.read()
@@ -31,40 +34,52 @@ while True:
         print("Error: Cannot read frame")
         break
 
-    # Draw the ROI box in blue
-    cv2.rectangle(frame, (ROI_X1, ROI_Y1), (ROI_X2, ROI_Y2), (255, 0, 0), 2)
-    cv2.putText(frame, "MESS AREA", (ROI_X1, ROI_Y1 - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+    # Draw Girls zone (left) in pink
+    cv2.rectangle(frame, (GIRLS_ZONE[0], GIRLS_ZONE[1]),
+                  (GIRLS_ZONE[2], GIRLS_ZONE[3]), (255, 105, 180), 2)
+    cv2.putText(frame, "GIRLS ZONE", (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 105, 180), 2)
 
-    # Run YOLO detection
+    # Draw Boys zone (right) in blue
+    cv2.rectangle(frame, (BOYS_ZONE[0], BOYS_ZONE[1]),
+                  (BOYS_ZONE[2], BOYS_ZONE[3]), (255, 0, 0), 2)
+    cv2.putText(frame, "BOYS ZONE", (mid_x + 10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+
+    # Run YOLO
     results = model(frame, verbose=False)
 
-    people_count = 0
+    girls_count = 0
+    boys_count  = 0
 
     for box in results[0].boxes:
         if int(box.cls) == 0:  # person
             coords = list(map(int, box.xyxy[0]))
             x1, y1, x2, y2 = coords
+            zone = get_zone(coords)
 
-            inside = is_inside_roi(coords, (ROI_X1, ROI_Y1, ROI_X2, ROI_Y2))
-
-            if inside:
-                people_count += 1
-                # Green box = inside ROI (counted)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, "Counted", (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            if zone == "girls":
+                girls_count += 1
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 105, 180), 2)
+                cv2.putText(frame, "Girl", (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 105, 180), 2)
             else:
-                # Red box = outside ROI (not counted)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                cv2.putText(frame, "Outside", (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                boys_count += 1
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                cv2.putText(frame, "Boy", (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
-    # Show count
-    cv2.putText(frame, f"People in Mess: {people_count}", (20, 40),
-                cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+    total = girls_count + boys_count
 
-    cv2.imshow("Mess Monitor - ROI Detection", frame)
+    # Show counts on screen
+    cv2.putText(frame, f"Girls: {girls_count}", (10, frame_height - 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 105, 180), 2)
+    cv2.putText(frame, f"Boys: {boys_count}", (mid_x + 10, frame_height - 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+    cv2.putText(frame, f"Total: {total}", (frame_width // 2 - 60, frame_height - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
+
+    cv2.imshow("Mess Monitor - Phase 2", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

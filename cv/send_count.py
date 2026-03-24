@@ -12,31 +12,35 @@ if not cap.isOpened():
     print("Error: Cannot open camera")
     exit()
 
-API_URL = "http://172.20.10.5:8000/update-count"
+# Member 2's API
+API_URL = "http://10.60.81.226:8000/update-count"
 
-ROI_X1, ROI_Y1 = 150, 100
-ROI_X2, ROI_Y2 = 500, 400
+# Frame dimensions
+ret, sample_frame = cap.read()
+frame_height, frame_width = sample_frame.shape[:2]
+mid_x = frame_width // 2
 
-def is_inside_roi(box, roi):
+def get_zone(box):
     x1, y1, x2, y2 = box
     cx = (x1 + x2) // 2
-    cy = (y1 + y2) // 2
-    rx1, ry1, rx2, ry2 = roi
-    return rx1 < cx < rx2 and ry1 < cy < ry2
+    return "girls" if cx < mid_x else "boys"
 
-def send_count(people_count):
+def send_count(girls, boys, total):
     try:
-        response = requests.get(API_URL, params={"people": people_count}, timeout=3)
+        response = requests.get(
+            API_URL,
+            params={"girls": girls, "boys": boys, "total": total},
+            timeout=3
+        )
         if response.status_code == 200:
-            print(f"✅ Sent count: {people_count} → {response.json()}")
+            print(f"✅ Sent → Girls: {girls} | Boys: {boys} | Total: {total} | Response: {response.json()}")
         else:
             print(f"⚠️ API error: {response.status_code}")
     except Exception as e:
         print(f"❌ Could not reach API: {e}")
 
-def send_in_background(people_count):
-    # Runs send_count in a separate thread so camera doesn't freeze
-    thread = threading.Thread(target=send_count, args=(people_count,))
+def send_in_background(girls, boys, total):
+    thread = threading.Thread(target=send_count, args=(girls, boys, total))
     thread.daemon = True
     thread.start()
 
@@ -50,45 +54,58 @@ while True:
         print("Error: Cannot read frame")
         break
 
-    cv2.rectangle(frame, (ROI_X1, ROI_Y1), (ROI_X2, ROI_Y2), (255, 0, 0), 2)
-    cv2.putText(frame, "MESS AREA", (ROI_X1, ROI_Y1 - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+    # Draw zones
+    cv2.rectangle(frame, (0, 0), (mid_x, frame_height), (255, 105, 180), 2)
+    cv2.putText(frame, "GIRLS ZONE", (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 105, 180), 2)
 
+    cv2.rectangle(frame, (mid_x, 0), (frame_width, frame_height), (255, 0, 0), 2)
+    cv2.putText(frame, "BOYS ZONE", (mid_x + 10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+
+    # Run YOLO
     results = model(frame, verbose=False)
 
-    people_count = 0
+    girls_count = 0
+    boys_count  = 0
 
     for box in results[0].boxes:
         if int(box.cls) == 0:
             coords = list(map(int, box.xyxy[0]))
             x1, y1, x2, y2 = coords
+            zone = get_zone(coords)
 
-            inside = is_inside_roi(coords, (ROI_X1, ROI_Y1, ROI_X2, ROI_Y2))
-
-            if inside:
-                people_count += 1
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, "Counted", (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            if zone == "girls":
+                girls_count += 1
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 105, 180), 2)
+                cv2.putText(frame, "Girl", (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 105, 180), 2)
             else:
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                cv2.putText(frame, "Outside", (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                boys_count += 1
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                cv2.putText(frame, "Boy", (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
-    cv2.putText(frame, f"People in Mess: {people_count}", (20, 40),
-                cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+    total = girls_count + boys_count
 
+    # Show counts
+    cv2.putText(frame, f"Girls: {girls_count}", (10, frame_height - 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 105, 180), 2)
+    cv2.putText(frame, f"Boys: {boys_count}", (mid_x + 10, frame_height - 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+    cv2.putText(frame, f"Total: {total}", (frame_width // 2 - 60, frame_height - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
+
+    # Send every 5 seconds
     current_time = time.time()
     if current_time - last_sent_time >= SEND_INTERVAL:
-        send_in_background(people_count)  # ← non-blocking now
+        send_in_background(girls_count, boys_count, total)
         last_sent_time = current_time
 
-    cv2.imshow("Mess Monitor - Live", frame)
+    cv2.imshow("Mess Monitor - Live Phase 2", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 cap.release()
 cv2.destroyAllWindows()
-
-
