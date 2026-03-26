@@ -1,4 +1,3 @@
-# ✅ All imports at the top
 import json
 import datetime
 from config import SEATS, AVG_TIME
@@ -39,3 +38,17 @@ def estimate_today_count(history):
         return 50
     return sum(same_day_data) // len(same_day_data)
 
+def get_crowd_level(people):
+    if people < 30:
+        return "Low"
+    elif people < 70:
+        return "Moderate"
+    else:
+        return "High"
+
+
+def get_recommended_time(wait_time):
+    if wait_time == 0:
+        return "Now"
+    else:
+        return f"After {wait_time} minutes"
