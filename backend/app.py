@@ -4,11 +4,14 @@ from utils import calculate_wait_time, get_user, get_crowd_level, get_recommende
 
 app = FastAPI()
 
-# ---------- ADMIN STATE ----------
-admin_state = {
-    "mess_closed": False,
-    "extra_counters": 1
-}
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------- FILE HANDLING ----------
 def read_data():
@@ -16,12 +19,17 @@ def read_data():
         with open("data.json", "r") as file:
             return json.load(file)
     except:
+        # Initializing with both current status and alerts to avoid KeyErrors
         return {
             "current": {
                 "girls": 0,
                 "boys": 0,
                 "total": 0,
                 "wait_time": 0
+            },
+            "alerts": {
+                "fresh_batch": False,
+                "food_ending": False
             }
         }
 
@@ -39,34 +47,46 @@ def home():
 def get_status():
     data = read_data()
 
-    current = data.get("current", {})
-    total = current.get("total", 0)
-    wait_time = current.get("wait_time", 0)
 
-    # Admin override
-    if admin_state["mess_closed"]:
-        return {"message": "🚫 Mess is closed today"}
+    people = data.get("current", {}).get("people", 0)
+    wait_time = data.get("current", {}).get("wait_time", 0)
+
+    # Simple logic for crowd level
+    if people < 30:
+        crowd = "Low"
+    elif people < 70:
+        crowd = "Moderate"
+    else:
+        crowd = "High"
 
     return {
-        "people": total,
+        "people": people,
         "estimated_wait": f"{wait_time} minutes",
-        "crowd_level": get_crowd_level(total),
-        "recommended_time": get_recommended_time(wait_time),
-        "counters": admin_state["extra_counters"]
+        "crowd_level": crowd,
+        "next_fresh_item": "10 minutes",
+        "closing_in": "30 minutes",
+        "history": [
+            {"time": "9AM", "people": 20},
+            {"time": "10AM", "people": 35},
+            {"time": "11AM", "people": 50},
+            {"time": "12PM", "people": 80},
+            {"time": "1PM", "people": 65},
+            {"time": "2PM", "people": 40}
+        ]
     }
 
 # 🔥 YOLO UPDATE API
 @app.get("/update-count")
-def update_count(total: int, girls: int = 0, boys: int = 0):
-    wait_time = calculate_wait_time(total)
 
-    data = {
-        "current": {
-            "girls": girls,
-            "boys": boys,
-            "total": total,
-            "wait_time": wait_time
-        }
+
+def update_count(people: int):
+    wait_time = calculate_wait_time(people)
+    data = read_data() # Read existing data first to preserve alerts
+
+    data["current"] = {
+        "people": people,
+        "wait_time": wait_time
+
     }
 
     write_data(data)
@@ -90,6 +110,7 @@ async def bot(request: Request):
     try:
         form = await request.form()
 
+
         message = form.get("Body", "").lower()
         phone = form.get("From", "unknown")
 
@@ -107,37 +128,60 @@ async def bot(request: Request):
         total = current.get("total", 0)
         wait_time = current.get("wait_time", 0)
 
-        # ✅ FIXED INDENTATION
-        if total == 0:
-            return {"reply": "⚠️ No data available yet. Please try later."}
 
-        # Admin override
-        if admin_state["mess_closed"]:
-            return {"reply": "🚫 Mess is closed today"}
+        # Correctly indented logic block
+        if "status" in message:
+            alerts = data.get("alerts", {})
+            import time
+            timestamp = alrets.get("timestamp", 0)
+            if time.time() - timestamp > 600:
+                alrets = {}
+                
+            response = f"👥 People: {people}\n⏱️ Wait: {wait_time} min"
 
-        # Commands
-        if message.strip() == "status":
-            return {
-                "reply": f"""🍽️ Mess Status
+            if alerts.get("fresh_batch"):
+                response += "\n🍲 Fresh batch available!"
 
-👥 People: {total}
-⏳ Wait Time: {wait_time} min
-📊 Crowd: {get_crowd_level(total)}
-💡 Suggestion: {get_recommended_time(wait_time)}
-🔢 Counters: {admin_state["extra_counters"]}
-"""
-            }
-
-        elif "help" in message:
-            return {
-                "reply": """📌 Commands:
-1. status → Check mess crowd
-2. help → Show commands"""
-            }
-
-        else:
-            return {"reply": "❓ Type 'help' to see commands"}
+            if alerts.get("food_ending"):
+                response += "\n⚠️ Food ending soon!"
+            
+            return {"reply": response}
+        
+        # Default reply if "status" is not in message
+        return {"reply": "I only understand 'status' right now. Try sending 'status'!"}
 
     except Exception as e:
-        print("🔥 ERROR:", str(e))
-        return {"reply": "Server error"}
+        print(f"Error: {e}")
+        return {"reply": "Sorry, I encountered an error processing your request."}
+
+# ---------- ALERT ENDPOINTS ----------
+@app.post("/fresh-batch")
+def fresh_batch():
+    data = read_data()
+    import time
+
+    data["alerts"] = {
+    "fresh_batch": True,
+    "food_ending": False,
+    "timestamp": time.time()
+}
+
+    write_data(data)
+    print("🔥 Fresh batch triggered")
+    return {"status": "fresh batch sent"}
+
+@app.post("/food-ending")
+def food_ending():
+    data = read_data()
+    import time
+
+    data["alerts"] = {
+        "fresh_batch": False,
+        "food_ending": True,
+        "timestamp": time.time()
+    }
+
+    write_data(data)
+    print("⚠️ Food ending triggered")
+    return {"status": "food ending alert"}
+

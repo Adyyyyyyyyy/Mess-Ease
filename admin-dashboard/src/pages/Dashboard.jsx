@@ -75,9 +75,51 @@ useEffect(() => {
 >
   📈 Analytics
 </p>
+<div style={{ marginTop: "30px" }}>
+  <p style={{ color: "#aaa", fontSize: "12px", marginBottom: "10px" }}>
+    ACTIONS
+  </p>
 
+<button
+  onClick={() => {
+    fetch("http://127.0.0.1:8000/fresh-batch", {
+      method: "POST",
+    });
+  }}
+  style={{
+    width: "100%",
+    padding: "10px",
+    marginBottom: "10px",
+    background: "#2ed573",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  }}
+>
+  🍲 Fresh Batch
+</button>
+
+<button
+  onClick={() => {
+    fetch("http://127.0.0.1:8000/food-ending", {
+      method: "POST",
+    });
+  }}
+  style={{
+    width: "100%",
+    padding: "10px",
+    background: "#ff4757",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  }}
+>
+  ⚠️ Food Ending
+</button>
 </div>
-
+</div>
     {/* Main Content */}
     <div style={{
   flex: 1,

@@ -1,11 +1,1 @@
-{
-  "current": {
-    "people": 45,
-    "wait_time": 5
-  },
-  "history": [
-    {"day": "monday", "people": 60},
-    {"day": "tuesday", "people": 70},
-    {"day": "wednesday", "people": 65}
-  ]
-}
+{"current": {"people": 45, "wait_time": 5}, "history": [{"day": "monday", "people": 60}, {"day": "tuesday", "people": 70}, {"day": "wednesday", "people": 65}], "alerts": {"fresh_batch": true, "food_ending": false}}
