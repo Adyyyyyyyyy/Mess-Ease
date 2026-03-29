@@ -1,1 +1,25 @@
-{"current": {"people": 45, "wait_time": 5}, "history": [{"day": "monday", "people": 60}, {"day": "tuesday", "people": 70}, {"day": "wednesday", "people": 65}], "alerts": {"fresh_batch": true, "food_ending": false}}
+{
+    "current": {
+        "people": 60,
+        "wait_time": 2
+    },
+    "history": [
+        {
+            "day": "monday",
+            "people": 60
+        },
+        {
+            "day": "tuesday",
+            "people": 70
+        },
+        {
+            "day": "wednesday",
+            "people": 65
+        }
+    ],
+    "alerts": {
+        "fresh_batch": true,
+        "food_ending": false,
+        "timestamp": 1774771383.3112137
+    }
+}

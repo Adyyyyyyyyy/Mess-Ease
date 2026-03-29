@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 import json
 from utils import calculate_wait_time, get_user, get_crowd_level, get_recommended_time
 
@@ -59,22 +60,24 @@ def get_status():
     else:
         crowd = "High"
 
-    return {
-        "people": people,
-        "estimated_wait": f"{wait_time} minutes",
-        "crowd_level": crowd,
-        "next_fresh_item": "10 minutes",
-        "closing_in": "30 minutes",
-        "history": [
-            {"time": "9AM", "people": 20},
-            {"time": "10AM", "people": 35},
-            {"time": "11AM", "people": 50},
-            {"time": "12PM", "people": 80},
-            {"time": "1PM", "people": 65},
-            {"time": "2PM", "people": 40}
-        ]
-    }
+    alerts = data.get("alerts", {})
 
+    return {
+    "people": people,
+    "estimated_wait": f"{wait_time} minutes",
+    "crowd_level": crowd,
+    "alerts": alerts,   
+    "next_fresh_item": "10 minutes",
+    "closing_in": "30 minutes",
+    "history": [
+        {"time": "9AM", "people": 20},
+        {"time": "10AM", "people": 35},
+        {"time": "11AM", "people": 50},
+        {"time": "12PM", "people": 80},
+        {"time": "1PM", "people": 65},
+        {"time": "2PM", "people": 40}
+    ]
+}
 # 🔥 YOLO UPDATE API
 @app.get("/update-count")
 
@@ -155,7 +158,7 @@ async def bot(request: Request):
         return {"reply": "Sorry, I encountered an error processing your request."}
 
 # ---------- ALERT ENDPOINTS ----------
-@app.post("/fresh-batch")
+@app.get("/fresh-batch")
 def fresh_batch():
     data = read_data()
     import time
@@ -170,7 +173,7 @@ def fresh_batch():
     print("🔥 Fresh batch triggered")
     return {"status": "fresh batch sent"}
 
-@app.post("/food-ending")
+@app.get("/food-ending")
 def food_ending():
     data = read_data()
     import time
