@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function UserDashboard() {
+  const navigate = useNavigate();
   const [data, setData] = useState({
     people: 0,
     estimated_wait: "0 minutes",
@@ -18,16 +20,23 @@ function UserDashboard() {
   const [loading, setLoading] = useState(false);
   const [openFAQ, setOpenFAQ] = useState(null);
 
+  // 🔥 LIVE DATA FETCH
   useEffect(() => {
+    fetchData();
+
     const interval = setInterval(() => {
-      fetch("http://127.0.0.1:8000/mess-status")
-        .then(res => res.json())
-        .then(res => setData(res))
-        .catch(err => console.error(err));
+      fetchData();
     }, 3000);
 
     return () => clearInterval(interval);
   }, []);
+
+  const fetchData = () => {
+    fetch("http://127.0.0.1:8000/mess-status")
+      .then(res => res.json())
+      .then(res => setData(res))
+      .catch(err => console.error(err));
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -69,7 +78,6 @@ function UserDashboard() {
           Mess-Ease
         </div>
 
-        {/* ✅ CLICKABLE NAV */}
         <div className="hidden md:flex gap-8 text-gray-600 font-medium">
           <a href="#features" className="hover:text-indigo-600 transition">Features</a>
           <a href="#how" className="hover:text-indigo-600 transition">How it Works</a>
@@ -77,9 +85,12 @@ function UserDashboard() {
           <a href="#faq" className="hover:text-indigo-600 transition">FAQ</a>
         </div>
 
-        <button className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-2 rounded-lg shadow-md">
-          Get Started →
-        </button>
+        <button
+  onClick={() => navigate("/")}
+  className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-2 rounded-lg shadow-md hover:scale-105 transition"
+>
+  Role →
+</button>
       </div>
 
       {/* HERO */}
@@ -94,9 +105,23 @@ function UserDashboard() {
         </p>
       </div>
 
+      {/* 🔥 ALERT BANNERS */}
+      <div className="max-w-4xl mx-auto px-4">
+        {data.alerts?.fresh_batch && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-center">
+            🍽 Fresh food just arrived! Go now!
+          </div>
+        )}
+
+        {data.alerts?.food_ending && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center">
+            ⚠ Food is ending soon! Hurry up!
+          </div>
+        )}
+      </div>
+
       {/* FEATURES */}
       <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6 max-w-5xl mx-auto px-4">
-
         <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
           <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
             <h3 className="font-semibold text-lg text-gray-800">Smarter Timing</h3>
@@ -123,7 +148,6 @@ function UserDashboard() {
             </p>
           </div>
         </div>
-
       </div>
 
       {/* HOW IT WORKS */}

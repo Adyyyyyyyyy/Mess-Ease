@@ -1,7 +1,7 @@
 {
     "current": {
-        "people": 60,
-        "wait_time": 2
+        "people": 70,
+        "wait_time": 7
     },
     "history": [
         {
@@ -20,6 +20,6 @@
     "alerts": {
         "fresh_batch": true,
         "food_ending": false,
-        "timestamp": 1774771383.3112137
+        "timestamp": 1774949635.0637238
     }
 }

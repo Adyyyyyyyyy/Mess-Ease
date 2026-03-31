@@ -1,13 +1,17 @@
-import { Routes, Route } from "react-router-dom";
-import AdminDashboard from "./pages/AdminDashboard";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import UserDashboard from "./pages/UserDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import RoleSelect from "./pages/RoleSelect";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<AdminDashboard />} />
-      <Route path="/user" element={<UserDashboard />} />
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<RoleSelect />} />
+        <Route path="/user" element={<UserDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
