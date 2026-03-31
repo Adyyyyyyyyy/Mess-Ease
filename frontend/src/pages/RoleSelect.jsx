@@ -20,7 +20,10 @@ function RoleSelect() {
 
           {/* USER */}
           <div
-            onClick={() => navigate("/user")}
+            onClick={() => {
+  localStorage.setItem("role", "user");
+  navigate("/user");
+}}
             className="cursor-pointer bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition hover:-translate-y-2 w-64"
           >
             <div className="text-4xl mb-3">👤</div>
@@ -32,7 +35,10 @@ function RoleSelect() {
 
           {/* ADMIN */}
           <div
-            onClick={() => navigate("/admin")}
+            onClick={() => {
+  localStorage.setItem("role", "admin");
+  navigate("/admin");
+}}
             className="cursor-pointer bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition hover:-translate-y-2 w-64"
           >
             <div className="text-4xl mb-3">⚙️</div>

@@ -3,11 +3,24 @@ import { useNavigate } from "react-router-dom";
 
 function UserDashboard() {
   const navigate = useNavigate();
+  useEffect(() => {
+  const role = localStorage.getItem("role");
+
+  if (role !== "user") {
+    navigate("/");
+  }
+}, []);
   const [data, setData] = useState({
     people: 0,
     estimated_wait: "0 minutes",
     crowd_level: "Low",
     alerts: {}
+  });
+
+  // ✅ Alerts state
+  const [alerts, setAlerts] = useState({
+    fresh: false,
+    ending: false
   });
 
   const [form, setForm] = useState({
@@ -34,9 +47,32 @@ function UserDashboard() {
   const fetchData = () => {
     fetch("http://127.0.0.1:8000/mess-status")
       .then(res => res.json())
-      .then(res => setData(res))
+      .then(res => {
+        setData({
+          people: res.people,
+          estimated_wait: res.wait,
+          crowd_level: res.crowd,
+          alerts: res.alerts
+        });
+
+        setAlerts({
+          fresh: res.alerts?.fresh_batch,
+          ending: res.alerts?.food_ending
+        });
+      })
       .catch(err => console.error(err));
   };
+
+  // ✅ Auto-hide alerts
+  useEffect(() => {
+    if (alerts.fresh || alerts.ending) {
+      const timer = setTimeout(() => {
+        setAlerts({ fresh: false, ending: false });
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [alerts]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -86,11 +122,11 @@ function UserDashboard() {
         </div>
 
         <button
-  onClick={() => navigate("/")}
-  className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-2 rounded-lg shadow-md hover:scale-105 transition"
->
-  Role →
-</button>
+          onClick={() => navigate("/")}
+          className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-2 rounded-lg shadow-md hover:scale-105 transition"
+        >
+          Role →
+        </button>
       </div>
 
       {/* HERO */}
@@ -107,13 +143,13 @@ function UserDashboard() {
 
       {/* 🔥 ALERT BANNERS */}
       <div className="max-w-4xl mx-auto px-4">
-        {data.alerts?.fresh_batch && (
+        {alerts.fresh && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-center">
             🍽 Fresh food just arrived! Go now!
           </div>
         )}
 
-        {data.alerts?.food_ending && (
+        {alerts.ending && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center">
             ⚠ Food is ending soon! Hurry up!
           </div>
@@ -121,51 +157,53 @@ function UserDashboard() {
       </div>
 
       {/* FEATURES */}
-      <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6 max-w-5xl mx-auto px-4">
-        <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
-          <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
-            <h3 className="font-semibold text-lg text-gray-800">Smarter Timing</h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Know the perfect time to eat and avoid unnecessary rush.
-            </p>
-          </div>
-        </div>
+<div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6 max-w-5xl mx-auto px-4">
 
-        <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
-          <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
-            <h3 className="font-semibold text-lg text-gray-800">Live Visibility</h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Stay updated with real-time crowd and food availability.
-            </p>
-          </div>
-        </div>
+  <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
+    <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
+      <h3 className="font-semibold text-lg text-gray-800">Smarter Timing</h3>
+      <p className="text-sm text-gray-500 mt-2">
+        Know the best time to eat and avoid long queues.
+      </p>
+    </div>
+  </div>
 
-        <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
-          <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
-            <h3 className="font-semibold text-lg text-gray-800">Instant Access</h3>
-            <p className="text-sm text-gray-500 mt-2">
-              Get updates instantly without needing to check manually.
-            </p>
-          </div>
-        </div>
-      </div>
+  <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
+    <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
+      <h3 className="font-semibold text-lg text-gray-800">Live Visibility</h3>
+      <p className="text-sm text-gray-500 mt-2">
+        See real-time crowd and food availability instantly.
+      </p>
+    </div>
+  </div>
+
+  <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
+    <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
+      <h3 className="font-semibold text-lg text-gray-800">Instant Alerts</h3>
+      <p className="text-sm text-gray-500 mt-2">
+        Get notified when fresh food arrives or is about to end.
+      </p>
+    </div>
+  </div>
+
+</div>
 
       {/* HOW IT WORKS */}
-      <div id="how" className="text-center mt-16">
-        <p className="text-indigo-500 font-medium">HOW IT WORKS</p>
-        <h2 className="text-2xl font-bold mt-2">Get Started in 4 Simple Steps</h2>
+<div id="how" className="text-center mt-16">
+  <p className="text-indigo-500 font-medium">HOW IT WORKS</p>
+  <h2 className="text-2xl font-bold mt-2">Get Started in 4 Simple Steps</h2>
 
-        <div className="flex justify-center gap-10 mt-8 flex-wrap">
-          {["Enter Details", "Check Crowd", "Get Alerts", "Use WhatsApp"].map((step, i) => (
-            <div key={i} className="text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold text-lg mx-auto shadow-lg">
-                {`0${i + 1}`}
-              </div>
-              <p className="mt-3 font-medium">{step}</p>
-            </div>
-          ))}
+  <div className="flex justify-center gap-10 mt-8 flex-wrap">
+    {["Enter Details", "Check Crowd", "Get Alerts", "Enjoy Meal"].map((step, i) => (
+      <div key={i} className="text-center">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold text-lg mx-auto shadow-lg">
+          {`0${i + 1}`}
         </div>
+        <p className="mt-3 font-medium">{step}</p>
       </div>
+    ))}
+  </div>
+</div>
 
       {/* LIVE */}
       <div id="live" className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 max-w-4xl mx-auto px-4">

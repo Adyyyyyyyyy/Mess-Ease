@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -10,6 +11,7 @@ import {
 } from "recharts";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [data, setData] = useState({
     people: 0,
     wait: "",
@@ -18,6 +20,26 @@ function AdminDashboard() {
 
   const [chartData, setChartData] = useState([]);
 
+  // ✅ NEW: Popup state
+  const [popup, setPopup] = useState("");
+
+  // ✅ NEW: Popup function
+  const showPopup = (message) => {
+    setPopup(message);
+    setTimeout(() => {
+      setPopup("");
+    }, 2000);
+  };
+
+  useEffect(() => {
+  const role = localStorage.getItem("role");
+
+  if (!role) return;
+
+  if (role !== "admin") {
+    navigate("/");
+  }
+}, [navigate]);
   // 🔥 FETCH DATA FROM BACKEND
   useEffect(() => {
     fetchData();
@@ -43,24 +65,51 @@ function AdminDashboard() {
   };
 
   // 🔥 BUTTON FUNCTIONS
-  const triggerFresh = () => {
-    fetch("http://127.0.0.1:8000/fresh-batch");
+
+  const triggerFresh = async () => {
+    await fetch("http://127.0.0.1:8000/fresh-batch", {
+      method: "POST"
+    });
+    showPopup("Fresh food alert sent 🍽");
+    fetchData();
   };
 
-  const triggerEnding = () => {
-    fetch("http://127.0.0.1:8000/food-ending");
+  const triggerEnding = async () => {
+    await fetch("http://127.0.0.1:8000/food-ending", {
+      method: "POST"
+    });
+    showPopup("Food ending alert sent ⚠");
+    fetchData();
   };
 
-  const increaseCrowd = () => {
-    const newPeople = data.people + 10;
+  const increaseCrowd = async () => {
+    await fetch("http://127.0.0.1:8000/update-count", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        people: data.people + 10
+      })
+    });
 
-    fetch(`http://127.0.0.1:8000/update-count?people=${newPeople}`)
-      .then(fetchData);
+    showPopup("Crowd updated 📊");
+    fetchData();
   };
 
-  const resetData = () => {
-    fetch("http://127.0.0.1:8000/update-count?people=0")
-      .then(fetchData);
+  const resetData = async () => {
+    await fetch("http://127.0.0.1:8000/update-count", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        people: 0
+      })
+    });
+
+    showPopup("Data reset 🔄");
+    fetchData();
   };
 
   return (
@@ -173,6 +222,13 @@ function AdminDashboard() {
         </div>
 
       </div>
+
+      {/* ✅ POPUP UI */}
+      {popup && (
+        <div className="fixed bottom-6 right-6 bg-black text-white px-6 py-3 rounded-xl shadow-lg">
+          {popup}
+        </div>
+      )}
 
     </div>
   );
