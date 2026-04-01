@@ -25,11 +25,10 @@ function UserDashboard() {
   });
 
   const [form, setForm] = useState({
-    phone: "",
-    name: "",
-    college: "",
-    mess: ""
-  });
+  phone: "",
+  name: "",
+  college: ""
+});
 
   const [loading, setLoading] = useState(false);
   const [openFAQ, setOpenFAQ] = useState(null);
@@ -80,7 +79,7 @@ function UserDashboard() {
   };
 
   const handleSubmit = async () => {
-    if (!form.phone || !form.name || !form.college || !form.mess) {
+    if (!form.phone || !form.name || !form.college) {
       alert("Please fill all fields");
       return;
     }
@@ -94,7 +93,7 @@ function UserDashboard() {
         body: JSON.stringify(form)
       });
 
-      window.location.href = `https://wa.me/91XXXXXXXXXX?text=status`;
+      window.location.href = "https://wa.me/14155238886?text=join%20your-sandbox-code";
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
