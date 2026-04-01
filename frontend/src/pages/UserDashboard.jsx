@@ -117,7 +117,6 @@ function UserDashboard() {
         <div className="hidden md:flex gap-8 text-gray-600 font-medium">
           <a href="#features" className="hover:text-indigo-600 transition">Features</a>
           <a href="#how" className="hover:text-indigo-600 transition">How it Works</a>
-          <a href="#live" className="hover:text-indigo-600 transition">Live</a>
           <a href="#faq" className="hover:text-indigo-600 transition">FAQ</a>
         </div>
 
@@ -141,20 +140,7 @@ function UserDashboard() {
         </p>
       </div>
 
-      {/* 🔥 ALERT BANNERS */}
-      <div className="max-w-4xl mx-auto px-4">
-        {alerts.fresh && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-center">
-            🍽 Fresh food just arrived! Go now!
-          </div>
-        )}
-
-        {alerts.ending && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center">
-            ⚠ Food is ending soon! Hurry up!
-          </div>
-        )}
-      </div>
+      
 
       {/* FEATURES */}
 <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6 max-w-5xl mx-auto px-4">
@@ -205,44 +191,21 @@ function UserDashboard() {
   </div>
 </div>
 
-      {/* LIVE */}
-      <div id="live" className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-xl p-6 text-center shadow">
-          <p className="text-gray-500">People</p>
-          <h2 className="text-2xl font-bold">{data.people}</h2>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 text-center shadow">
-          <p className="text-gray-500">Wait Time</p>
-          <h2 className="text-2xl font-bold">{data.estimated_wait}</h2>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 text-center shadow">
-          <p className="text-gray-500">Crowd</p>
-          <h2 className="text-2xl font-bold">{data.crowd_level}</h2>
-        </div>
-      </div>
-
       {/* FORM */}
       <div className="bg-white rounded-xl shadow p-6 mt-10 max-w-md mx-auto">
         <h2 className="text-lg font-semibold mb-4 text-center">
           Get Instant Mess Updates
         </h2>
 
-        <div className="space-y-3">
-          <input name="phone" placeholder="Phone Number" onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
-          <input name="name" placeholder="Name" onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
+        
 
+        <div className="space-y-3">
+          <input name="name" placeholder="Name" onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
+          <input name="phone" placeholder="Phone Number" onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
           <select name="college" onChange={handleChange} className="w-full border rounded-lg px-3 py-2">
             <option value="">Select College</option>
             <option value="ABC">ABC</option>
             <option value="XYZ">XYZ</option>
-          </select>
-
-          <select name="mess" onChange={handleChange} className="w-full border rounded-lg px-3 py-2">
-            <option value="">Select Mess</option>
-            <option value="Mess A">Mess A</option>
-            <option value="Mess B">Mess B</option>
           </select>
 
           <button
