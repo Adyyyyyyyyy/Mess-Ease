@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/Mess-Ease.png";
 
 function UserDashboard() {
   const navigate = useNavigate();
   useEffect(() => {
-  const role = localStorage.getItem("role");
+    const role = localStorage.getItem("role");
 
-  if (role !== "user") {
-    navigate("/");
-  }
-}, []);
+    if (role !== "user") {
+      navigate("/");
+    }
+  }, []);
   const [data, setData] = useState({
     people: 0,
     estimated_wait: "0 minutes",
@@ -107,12 +108,13 @@ function UserDashboard() {
 
       {/* NAVBAR */}
       <div className="flex justify-between items-center px-8 py-4 bg-white/70 backdrop-blur-md shadow-sm sticky top-0 z-50">
-        <div className="flex items-center gap-3 font-bold text-lg">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white">
-            🍽️
-          </div>
-          Mess-Ease
-        </div>
+       <div className="flex items-center">
+  <img
+    src={logo}
+    alt="Mess-Ease Logo"
+    className="h-9 w-auto object-contain"
+  />
+</div>
 
         <div className="hidden md:flex gap-8 text-gray-600 font-medium">
           <a href="#features" className="hover:text-indigo-600 transition">Features</a>
@@ -131,7 +133,7 @@ function UserDashboard() {
       {/* HERO */}
       <div className="text-center py-16 px-6">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-          Eat Better. Skip the Chaos.
+          Walk In. Not Wait In.
         </h1>
 
         <p className="mt-4 text-gray-600 max-w-xl mx-auto">
@@ -140,56 +142,56 @@ function UserDashboard() {
         </p>
       </div>
 
-      
+
 
       {/* FEATURES */}
-<div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6 max-w-5xl mx-auto px-4">
+      <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6 max-w-5xl mx-auto px-4">
 
-  <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
-    <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
-      <h3 className="font-semibold text-lg text-gray-800">Smarter Timing</h3>
-      <p className="text-sm text-gray-500 mt-2">
-        Know the best time to eat and avoid long queues.
-      </p>
-    </div>
-  </div>
+        <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
+          <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
+            <h3 className="font-semibold text-lg text-gray-800">Smarter Timing</h3>
+            <p className="text-sm text-gray-500 mt-2">
+              Know the best time to eat and avoid long queues.
+            </p>
+          </div>
+        </div>
 
-  <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
-    <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
-      <h3 className="font-semibold text-lg text-gray-800">Live Visibility</h3>
-      <p className="text-sm text-gray-500 mt-2">
-        See real-time crowd and food availability instantly.
-      </p>
-    </div>
-  </div>
+        <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
+          <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
+            <h3 className="font-semibold text-lg text-gray-800">Live Visibility</h3>
+            <p className="text-sm text-gray-500 mt-2">
+              See real-time crowd and food availability instantly.
+            </p>
+          </div>
+        </div>
 
-  <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
-    <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
-      <h3 className="font-semibold text-lg text-gray-800">Instant Alerts</h3>
-      <p className="text-sm text-gray-500 mt-2">
-        Get notified when fresh food arrives or is about to end.
-      </p>
-    </div>
-  </div>
+        <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-500 to-purple-500">
+          <div className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-xl transition duration-300">
+            <h3 className="font-semibold text-lg text-gray-800">Instant Alerts</h3>
+            <p className="text-sm text-gray-500 mt-2">
+              Get notified when fresh food arrives or is about to end.
+            </p>
+          </div>
+        </div>
 
-</div>
+      </div>
 
       {/* HOW IT WORKS */}
-<div id="how" className="text-center mt-16">
-  <p className="text-indigo-500 font-medium">HOW IT WORKS</p>
-  <h2 className="text-2xl font-bold mt-2">Get Started in 4 Simple Steps</h2>
+      <div id="how" className="text-center mt-16">
+        <p className="text-indigo-500 font-medium">HOW IT WORKS</p>
+        <h2 className="text-2xl font-bold mt-2">Get Started in 4 Simple Steps</h2>
 
-  <div className="flex justify-center gap-10 mt-8 flex-wrap">
-    {["Enter Details", "Check Crowd", "Get Alerts", "Enjoy Meal"].map((step, i) => (
-      <div key={i} className="text-center">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold text-lg mx-auto shadow-lg">
-          {`0${i + 1}`}
+        <div className="flex justify-center gap-10 mt-8 flex-wrap">
+          {["Enter Details", "Check Crowd", "Get Alerts", "Enjoy Meal"].map((step, i) => (
+            <div key={i} className="text-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold text-lg mx-auto shadow-lg">
+                {`0${i + 1}`}
+              </div>
+              <p className="mt-3 font-medium">{step}</p>
+            </div>
+          ))}
         </div>
-        <p className="mt-3 font-medium">{step}</p>
       </div>
-    ))}
-  </div>
-</div>
 
       {/* FORM */}
       <div className="bg-white rounded-xl shadow p-6 mt-10 max-w-md mx-auto">
@@ -197,7 +199,7 @@ function UserDashboard() {
           Get Instant Mess Updates
         </h2>
 
-        
+
 
         <div className="space-y-3">
           <input name="name" placeholder="Name" onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
