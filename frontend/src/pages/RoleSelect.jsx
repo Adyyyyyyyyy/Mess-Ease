@@ -17,7 +17,6 @@ function RoleSelection() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-indigo-200 via-white to-#98b2ec flex flex-col items-center justify-center px-6">
-
       {/* BACKGROUND DECOR */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* LEFT */}
@@ -36,39 +35,39 @@ function RoleSelection() {
       </div>
 
       {/* LOGO */}
-      <div className="flex justify-center mb-5">
+      <div className="flex justify-center mt-2 mb-2">
         <img
           src={logo}
           alt="logo"
-          className="h-46 md:h-44 w-auto object-contain drop-shadow-lg"
+          className="h-24 md:h-28 w-auto object-contain drop-shadow-lg"
         />
       </div>
 
       {/* MAIN HEADING */}
-      <h1 className="text-3xl md:text-5xl mt-0 font-bold text-gray-900 text-center leading-tight">
+      <h1 className="text-2xl md:text-4xl mb-1 font-bold text-gray-900 text-center leading-tight">
         Welcome to <span style={{ color: "#170796" }}>Mess-Ease</span>
       </h1>
 
       {/* DESCRIPTION */}
-      <p className="text-gray-600 mt-4 mb-5 text-center max-w-xl text-m md:text-base leading-relaxed">
+      <p className="text-gray-600 mt-2 mb-2 text-center max-w-xl text-sm md:text-base leading-relaxed">
         Know the mess crowd and waiting time instantly directly from WhatsApp.
         No apps. No confusion. Just real-time mess insights.
       </p>
 
       {/* ROLE TITLE */}
-      <p className="text-gray-700 font-medium mb-6">
+      <p className="text-gray-700 font-medium mb-4">
         How would you like to continue?
       </p>
 
       {/* CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-3xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 mb-5 gap-6 w-full max-w-2xl">
 
         {/* USER CARD */}
         <div
           onClick={() => selectRole("user")}
           className="cursor-pointer rounded-2xl p-[2px] bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 hover:shadow-2xl transition duration-300"
         >
-          <div className="bg-white rounded-2xl p-10 shadow-md h-full flex flex-col items-center justify-center text-center">
+          <div className="bg-white rounded-2xl p-6 shadow-md h-full flex flex-col items-center justify-center text-center">
             <div className="h-20 w-20 mb-4 flex items-center justify-center">
               <img
                 className="h-full w-full object-contain"
@@ -90,7 +89,7 @@ function RoleSelection() {
           onClick={() => selectRole("admin")}
           className="cursor-pointer rounded-2xl p-[2px] bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 hover:shadow-2xl transition duration-300"
         >
-          <div className="bg-white rounded-2xl p-10 shadow-md h-full flex flex-col items-center justify-center text-center">
+          <div className="bg-white rounded-2xl p-6 shadow-md h-full flex flex-col items-center justify-center text-center">
             <div className="h-20 w-20 mb-4 flex items-center justify-center">
               <img
                 className="h-full w-full object-contain"

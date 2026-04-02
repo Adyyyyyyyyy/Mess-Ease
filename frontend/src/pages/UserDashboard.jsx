@@ -41,7 +41,7 @@ function UserDashboard() {
         body: JSON.stringify(form)
       });
 
-      window.location.href = "https://wa.me/14155238886?text=join%20your-sandbox-code";
+      window.location.href = "https://wa.me/14155238886?text=join%20angry-former";
     } catch (err) {
       alert("Something went wrong");
     } finally {
@@ -61,11 +61,11 @@ function UserDashboard() {
       <div className="absolute bottom-[-120px] right-[-100px] w-80 h-80 bg-purple-300 opacity-20 rounded-full blur-3xl"></div>
 
       {/* NAVBAR */}
-      <div className="flex justify-between items-center px-8 py-4 bg-white/70 backdrop-blur-md shadow-sm sticky top-0 z-50">
+      <div className="flex justify-between items-center px-4 py-4 bg-white/70 backdrop-blur-md shadow-sm sticky top-0 z-50">
 
         <img
           src={logo}
-          className="h-20 md:h-24 object-contain drop-shadow-xl animate-logoFloat"
+          className="h-10 md:h-14 object-contain drop-shadow-xl animate-logoFloat"
         />
 
         <div className="hidden md:flex gap-8 text-gray-600 font-medium">
@@ -76,27 +76,30 @@ function UserDashboard() {
 
         <button
           onClick={() => navigate("/")}
-          className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-2 rounded-lg shadow-md hover:scale-105 transition"
+          className="bg-gradient-to-r from-indigo-900 to-indigo-500 text-white px-5 py-2 rounded-lg shadow-md hover:scale-105 transition"
         >
           Role →
         </button>
       </div>
 
       {/* HERO */}
-      <div className="text-center py-20 px-6 max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
-          Walk In. <span className="text-indigo-600">Not Wait In.</span>
+      <div className="text-center py-20 px-10 max-w-4xl mx-auto">
+        <h1 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight">
+          Walk In. <span style={{ color: "#170796" }}>Not Wait In.</span>
         </h1>
 
         <p className="mt-6 text-gray-600 text-lg leading-relaxed">
-          Mess-Ease helps you skip long queues by showing real-time crowd levels, wait times,
-          and food availability — so you always choose the perfect time to eat, save time daily,
-          and never miss fresh food again.
+          Know the mess crowd and waiting time instantly, directly from WhatsApp.
+        <p>No apps. No confusion. Just real-time mess insights.</p>
         </p>
+
+        <button onClick={scrollToForm} className="mt-10 bg-gradient-to-r from-indigo-900 to-indigo-500 text-white px-8 py-3 rounded-xl shadow-lg hover:scale-105 transition">
+          Let's set up Mess-Mate
+        </button>
       </div>
 
       {/* FEATURES */}
-      <div id="features" className="mt-10 max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+      <div id="features" className="max-w-6xl mx-auto px-10 grid md:grid-cols-3 gap-8">
         {[
           ["⏱️ Smarter Timing", "Know exactly when the mess is less crowded and avoid long queues."],
           ["📡 Live Visibility", "Check real-time crowd levels and food availability instantly."],
@@ -124,10 +127,6 @@ function UserDashboard() {
             🤖 Mess-Mate: Crowd is Medium | Wait: 10 mins | Fresh food 🍽️
           </p>
         </div>
-
-        <button onClick={scrollToForm} className="mt-10 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-8 py-3 rounded-xl shadow-lg hover:scale-105 transition">
-          🚀 Get Started with Mess-Mate
-        </button>
       </div>
 
       {/* HOW IT WORKS */}
