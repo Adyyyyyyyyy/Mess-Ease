@@ -1,36 +1,41 @@
 # ✅ All imports at the top
 import json
 import datetime
-from config import SEATS, AVG_TIME
+from config import COMFORTABLE_QUEUE, SERVING_RATE, EXTRA_COUNTER_BOOST
 
-def calculate_wait_time(people):
-    waiting_people = max(0, people - SEATS)
-    wait_time = (waiting_people / SEATS) * AVG_TIME
+def calculate_wait_time(people, extra_counters=1):
+    effective_rate = SERVING_RATE + (extra_counters - 1) * EXTRA_COUNTER_BOOST
+    excess = max(0, people - COMFORTABLE_QUEUE)
+    wait_time = excess / effective_rate
     return round(wait_time)
 
-def load_users():
-    try:
-        with open("users.json", "r") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):  # ✅ Handle missing file
-        return []
+from database import conn
 
-def save_users(data):
-    with open("users.json", "w") as f:
-        json.dump(data, f, indent=4)
-
-def get_user(phone):
-    users = load_users()
-    for user in users:
-        if user["phone"] == phone:
-            return user
+def get_user(mobile):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE mobile = ?", (mobile,))
+    row = cursor.fetchone()
+    if row:
+        return {
+            "id": row[0],
+            "name": row[1],
+            "mobile": row[2],
+            "college": row[3],
+            "role": row[4]
+        }
     return None
 
-def add_user(user_data):
-    users = load_users()
-    users.append(user_data)
-    save_users(users)
-
+def register_user(name, mobile, college, role="student"):
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO users (name, mobile, college, role) VALUES (?, ?, ?, ?)",
+            (name, mobile, college, role)
+        )
+        conn.commit()
+        return True
+    except:
+        return False  # mobile already exists
 def estimate_today_count(history):
     today = datetime.datetime.now().strftime("%A").lower()
     same_day_data = [d["people"] for d in history if d["day"] == today]
@@ -39,3 +44,19 @@ def estimate_today_count(history):
         return 50
     return sum(same_day_data) // len(same_day_data)
 
+def get_crowd_level(people):
+    if people < 30:
+        return "Low"
+    elif people < 70:
+        return "Moderate"
+    else:
+        return "High"
+
+
+def get_recommended_time(wait_time):
+    if wait_time == 0:
+        return "🟢 Walk in directly, no wait!"
+    elif wait_time <= 5:
+        return f"⚠️ Come in {wait_time} mins for shorter wait"
+    else:
+        return f"⚠️ Avoid peak — try after {wait_time} mins"
