@@ -94,7 +94,7 @@ function UserDashboard() {
         </p>
 
         <button onClick={scrollToForm} className="mt-10 bg-gradient-to-r from-indigo-900 to-indigo-500 text-white px-8 py-3 rounded-xl shadow-lg hover:scale-105 transition">
-          Let's set up Mess-Mate
+          Let's set up your Mess-Mate!
         </button>
       </div>
 
@@ -190,7 +190,7 @@ function UserDashboard() {
       </div>
 
       {/* FOOTER */}
-      <div className="mt-24 bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-10 px-6">
+      <div className="mt-24 bg-gradient-to-r from-indigo-900 to-indigo-500 text-white py-10 px-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-center md:text-left">
           <div>
             <h3 className="text-2xl font-bold">Mess-Ease</h3>
