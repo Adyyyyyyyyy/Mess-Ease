@@ -16,7 +16,10 @@ function RoleSelection() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-indigo-200 via-white to-#98b2ec flex flex-col items-center justify-center px-6">
+    <div
+      className="relative min-h-screen bg-gradient-to-br from-indigo-200 via-white to-#98b2ec flex flex-col items-center justify-center px-6"
+      style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}
+    >
       {/* BACKGROUND DECOR */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* LEFT */}
@@ -44,18 +47,27 @@ function RoleSelection() {
       </div>
 
       {/* MAIN HEADING */}
-      <h1 className="text-2xl md:text-4xl mb-1 font-bold text-gray-900 text-center leading-tight">
+      <h1
+        className="text-2xl md:text-4xl mb-1 font-bold text-gray-900 text-center leading-tight"
+        style={{ fontFamily: "'Playfair Display', serif" }}
+      >
         Welcome to <span style={{ color: "#170796" }}>Mess-Ease</span>
       </h1>
 
       {/* DESCRIPTION */}
-      <p className="text-gray-600 mt-2 mb-2 text-center max-w-xl text-sm md:text-base leading-relaxed">
+      <p
+        className="text-gray-600 mt-2 mb-2 text-center max-w-xl text-sm md:text-base leading-relaxed"
+        style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}
+      >
         Know the mess crowd and waiting time instantly directly from WhatsApp.
         No apps. No confusion. Just real-time mess insights.
       </p>
 
       {/* ROLE TITLE */}
-      <p className="text-gray-700 font-medium mb-4">
+      <p
+        className="text-gray-700 font-medium mb-4"
+        style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}
+      >
         How would you like to continue?
       </p>
 
@@ -75,10 +87,16 @@ function RoleSelection() {
                 alt="User"
               />
             </div>
-            <h2 className="text-xl font-bold mb-2 w-full text-center text-gray-800">
+            <h2
+              className="text-xl font-bold mb-2 w-full text-center text-gray-800"
+              style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", fontWeight: 700 }}
+            >
               Hosteller
             </h2>
-            <p className="text-gray-500 text-m leading-relaxed max-w-xs text-center">
+            <p
+              className="text-gray-500 text-m leading-relaxed max-w-xs text-center"
+              style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}
+            >
               Get instant mess updates, avoid long queues and visit the mess at the right time.
             </p>
           </div>
@@ -97,41 +115,22 @@ function RoleSelection() {
                 alt="Admin"
               />
             </div>
-            <h2 className="text-xl font-bold mb-2 w-full text-center text-gray-800">
+            <h2
+              className="text-xl font-bold mb-2 w-full text-center text-gray-800"
+              style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", fontWeight: 700 }}
+            >
               Mess-Staff
             </h2>
-            <p className="text-gray-500 text-m leading-relaxed max-w-xs text-center">
+            <p
+              className="text-gray-500 text-m leading-relaxed max-w-xs text-center"
+              style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}
+            >
               Get correct food estimates, manage mess operations and provide real-time updates to students.
             </p>
           </div>
         </div>
 
       </div>
-
-      {/* ADVANCED FLOAT ANIMATIONS */}
-      <style>
-        {`
-          @keyframes float1 {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(20px, -25px) rotate(5deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
-          }
-          @keyframes float2 {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(-25px, -20px) rotate(-5deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
-          }
-          @keyframes float3 {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(15px, -35px) rotate(3deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
-          }
-          .animate-float1 { animation: float1 7s ease-in-out infinite; }
-          .animate-float2 { animation: float2 6s ease-in-out infinite; }
-          .animate-float3 { animation: float3 8s ease-in-out infinite; }
-        `}
-      </style>
-
     </div>
   );
 }
