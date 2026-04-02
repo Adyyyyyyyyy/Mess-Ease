@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Radio, Bell, Users, ChefHat, Smartphone, CheckCircle, MessageCircle, ArrowRight, Menu, X } from "lucide-react";
+import { Clock, Radio, Bell, ChefHat, CheckCircle, MessageCircle, ArrowRight, Menu, X } from "lucide-react";
 import logo from "../assets/Mess-Ease.png";
+import { useSmoothScroll } from "../ScrollComponent";
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -37,16 +38,14 @@ const FAQS = [
   ["How do I get alerts on WhatsApp?", "Once you register, you'll be connected to Mess-Mate on WhatsApp. It sends you a message whenever fresh food is ready or the crowd clears."],
   ["Is my data safe?", "Yes. Only your name, phone number and college are stored, nothing else. Your data is never shared with anyone outside your mess."],
   ["Do I need to install any app?", "No. Everything runs through WhatsApp, which you already have. Zero installs, zero logins."],
-  ["What languages can I use?", "English, Hindi, or Hinglish whatever feels natural. Mess-Mate understands all three."],
+  ["What languages can I use?", "English, Hindi, or Hinglish — whatever feels natural. Mess-Mate understands all three."],
 ];
 
-const NAV_LINKS = [["#features", "Features"], ["#how", "How it Works"], ["#bot", "Mess-Mate"], ["#faq", "FAQ"]];
+// ✅ NAV_LINKS now use plain id strings (no # prefix) — scrollTo handles targeting
+const NAV_LINKS = [["features", "Features"], ["how", "How it Works"], ["bot", "Mess-Mate"], ["faq", "FAQ"]];
 
-// ─── Inline CSS (font imports removed — now in global.css) ────────────────────
-
-const CSS = `
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-`;
+// ─── Inline CSS (fonts & shared classes live in global.css) ───────────────────
+const CSS = `* { box-sizing: border-box; margin: 0; padding: 0; }`;
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
@@ -68,7 +67,7 @@ const FormField = ({ label, children }) => (
 
 export default function UserDashboard() {
   const navigate = useNavigate();
-  const formRef = useRef(null);
+  const { scrollTo } = useSmoothScroll(); // ✅ single scroll utility used everywhere
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", college: "" });
@@ -79,8 +78,13 @@ export default function UserDashboard() {
     if (localStorage.getItem("role") !== "user") navigate("/");
   }, []);
 
-  const scrollToForm = () => formRef.current?.scrollIntoView({ behavior: "smooth" });
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // closes mobile menu then smoothly scrolls
+  const handleNavClick = (id) => {
+    setMenuOpen(false);
+    scrollTo(id);
+  };
 
   const handleSubmit = async () => {
     if (!form.name || !form.phone || !form.college) return alert("Please fill all fields");
@@ -106,30 +110,56 @@ export default function UserDashboard() {
       {/* ── Navbar ─────────────────────────────────────────────────────────── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #f3f4f6", padding: "0 5%" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", height: 72 }}>
-          <img src={logo} className="float-logo" style={{ height: 58, objectFit: "contain" }} alt="Mess-Ease" />
+          <img src={logo} onClick={() => scrollTo("hero")} className="float-logo" style={{ height: 58, objectFit: "contain" }} alt="Mess-Ease" />
 
           {/* Desktop nav */}
           <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: 36 }}>
-            {NAV_LINKS.map(([href, label]) => <a key={href} href={href} className="nav-link">{label}</a>)}
+            {NAV_LINKS.map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => scrollTo(id)}
+                className="nav-link"
+                style={{ background: "none", border: "none", cursor: "pointer" }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-          <button onClick={() => navigate("/")} className="hide-mobile btn-primary" style={{ padding: "9px 22px", fontSize: 14, marginLeft: 8 }}>Switch Role</button>
+          <button onClick={() => navigate("/")} className="hide-mobile btn-primary" style={{ padding: "9px 22px", fontSize: 14, marginLeft: 8 }}>
+            Switch Role
+          </button>
 
           {/* Mobile hamburger */}
-          <button className="hide-desktop" onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", alignItems: "center", justifyContent: "center" }}>
+          <button
+            className="hide-desktop"
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
         {menuOpen && (
           <div style={{ padding: "16px 5% 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: "1px solid #f3f4f6" }}>
-            {NAV_LINKS.map(([href, label]) => <a key={href} href={href} className="nav-link" onClick={() => setMenuOpen(false)}>{label}</a>)}
-            <button onClick={() => navigate("/")} className="btn-primary" style={{ padding: "9px 22px", fontSize: 14, marginLeft: 8 }}>Switch Role</button>
+            {NAV_LINKS.map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => handleNavClick(id)}
+                className="nav-link"
+                style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+              >
+                {label}
+              </button>
+            ))}
+            <button onClick={() => navigate("/")} className="btn-primary" style={{ padding: "9px 22px", fontSize: 14 }}>
+              Switch Role
+            </button>
           </div>
         )}
       </nav>
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <div style={{ background: "linear-gradient(135deg,#eef2ff 0%,#f5f3ff 40%,#ede9fe 70%,#ddd6fe 100%)", padding: "88px 5% 96px", textAlign: "center" }}>
+      <div id="hero" style={{ background: "linear-gradient(135deg,#eef2ff 0%,#f5f3ff 40%,#ede9fe 70%,#ddd6fe 100%)", padding: "88px 5% 96px", textAlign: "center" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
           <div className="fade-up" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #c7d2fe", borderRadius: 100, padding: "6px 16px", marginBottom: 28, fontSize: 13, fontWeight: 600, color: "#4f46e5" }}>
@@ -147,10 +177,17 @@ export default function UserDashboard() {
           </p>
 
           <div className="fade-up-3" style={{ marginTop: 40, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={scrollToForm} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16 }}>Get Started Free</button>
-            <a href="#bot" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", border: "1.5px solid #c7d2fe", borderRadius: 10, color: "#4338ca", fontWeight: 600, fontSize: 16, textDecoration: "none", background: "#fff" }}>
+            {/* ✅ scrollTo("register") — targets the form section below */}
+            <button onClick={() => scrollTo("register")} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16 }}>
+              Get Started Free
+            </button>
+            {/* ✅ scrollTo("bot") — targets Mess-Mate section */}
+            <button
+              onClick={() => scrollTo("bot")}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", border: "1.5px solid #c7d2fe", borderRadius: 10, color: "#4338ca", fontWeight: 600, fontSize: 16, background: "#fff", cursor: "pointer", fontFamily: "'DM Sans','Segoe UI',sans-serif" }}
+            >
               See how it works <ArrowRight size={16} />
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -184,7 +221,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Mess-Mate highlight */}
+        {/* ── Mess-Mate highlight ─────────────────────────────────────────── */}
         <div id="bot" style={{ padding: "0 5% 88px", marginTop: 80 }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <div style={{ background: "linear-gradient(135deg,#170796,#312e81,#1e1b4b)", borderRadius: 24, overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 480 }} className="grid-3">
@@ -210,7 +247,12 @@ export default function UserDashboard() {
                   ))}
                 </div>
 
-                <button onClick={scrollToForm} className="btn-primary" style={{ marginTop: 40, background: "#fff", color: "#170796", width: "fit-content", boxShadow: "0 4px 20px rgba(0,0,0,.2)" }}>
+                {/* ✅ scrollTo("register") */}
+                <button
+                  onClick={() => scrollTo("register")}
+                  className="btn-primary"
+                  style={{ marginTop: 40, background: "#fff", color: "#170796", width: "fit-content", boxShadow: "0 4px 20px rgba(0,0,0,.2)" }}
+                >
                   Connect to Mess-Mate →
                 </button>
               </div>
@@ -247,7 +289,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* How it works */}
+        {/* ── How it works ────────────────────────────────────────────────── */}
         <div id="how" style={{ padding: "0 5% 88px" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <SectionHeader tag="Simple Setup" title="Ready in 4 steps" />
@@ -263,8 +305,9 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Registration form */}
-        <div ref={formRef} style={{ padding: "0 5% 88px" }}>
+        {/* ── Registration form ────────────────────────────────────────────── */}
+        {/* ✅ id="register" — all scrollTo("register") calls land here */}
+        <div id="register" style={{ padding: "0 5% 88px" }}>
           <div style={{ maxWidth: 480, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 36 }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: "#4f46e5", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 12 }}>Get Started</p>
@@ -296,7 +339,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* FAQ */}
+        {/* ── FAQ ─────────────────────────────────────────────────────────── */}
         <div id="faq" style={{ padding: "0 5% 88px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto" }}>
             <SectionHeader tag="FAQ" title="Questions? We've got answers." />
@@ -323,20 +366,26 @@ export default function UserDashboard() {
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 48 }} className="grid-3">
 
             <div>
-              <img src={logo} style={{ height: 84, objectFit: "contain", filter: "brightness(0) invert(1)", marginBottom: 16 }} alt="Mess-Ease" />
+              <img src={logo} onClick={() => scrollTo("hero")} style={{ height: 84, objectFit: "contain", filter: "brightness(0) invert(1)", marginBottom: 16 }} alt="Mess-Ease" />
               <p style={{ fontSize: 15, color: "rgba(255,255,255,.6)", lineHeight: 1.7, maxWidth: 300 }}>
-                A crowd management system for college mess halls - powered by WhatsApp and real-time data, built to save student time.
+                A crowd management system for college mess halls — powered by WhatsApp and real-time data, built to save student time.
               </p>
             </div>
 
             <div>
               <h4 style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,.5)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 20 }}>Navigation</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {NAV_LINKS.map(([href, label]) => (
-                  <a key={href} href={href} style={{ color: "rgba(255,255,255,.65)", fontSize: 15, textDecoration: "none", transition: "color .2s" }}
-                    onMouseEnter={e => e.target.style.color = "#fff"}
-                    onMouseLeave={e => e.target.style.color = "rgba(255,255,255,.65)"}
-                  >{label}</a>
+                {/* ✅ Footer nav also uses scrollTo */}
+                {NAV_LINKS.map(([id, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => scrollTo(id)}
+                    style={{ color: "rgba(255,255,255,.65)", fontSize: 15, background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans','Segoe UI',sans-serif", transition: "color .2s" }}
+                    onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.65)"}
+                  >
+                    {label}
+                  </button>
                 ))}
               </div>
             </div>
@@ -346,7 +395,11 @@ export default function UserDashboard() {
               <p style={{ fontSize: 15, color: "rgba(255,255,255,.65)", lineHeight: 1.7 }}>
                 Built for students.<br />Connect with us on WhatsApp to try Mess-Mate at your campus.
               </p>
-              <button onClick={scrollToForm} style={{ marginTop: 20, background: "#fff", color: "#0f0a2e", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              {/* ✅ scrollTo("register") */}
+              <button
+                onClick={() => scrollTo("register")}
+                style={{ marginTop: 20, background: "#fff", color: "#0f0a2e", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+              >
                 Get Access
               </button>
             </div>
