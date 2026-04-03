@@ -157,15 +157,45 @@ def whatsapp_reply():
 
     session = sessions.get(sender)
 
-    # ── Not registered → ask them to use dashboard ─────────────────────────
+    # If not in memory, check backend database
     if not session or session.get("state") != "registered":
-        msg.body(
-            "👋 Welcome to *Mess Monitor!*\n\n"
-            "Please register first from the dashboard "
-            "so I know your college and mess.\n\n"
-            f"Register here: {DASHBOARD_LINK}"
-        )
-        return str(resp)
+      try:
+            mobile = sender.replace("whatsapp:", "").replace("+", "")
+# Remove country code 91 if present
+            if mobile.startswith("91") and len(mobile) == 12:
+             mobile = mobile[2:]
+            print(f"🔍 Checking mobile: {mobile}")
+            verify = requests.post(
+                f"{BACKEND_BASE_URL}/login",
+                params={"mobile": mobile},
+                timeout=5
+            )
+            verify_data = verify.json()
+            print(f"📦 Backend response: {verify_data}")
+
+            if verify_data.get("verified"):
+                # Store in session for future messages
+                sessions[sender] = {
+                    "state": "registered",
+                    "phone": mobile,
+                    "name": verify_data["name"],
+                    "college": verify_data["college"],
+                    "mess": verify_data["mess"]
+                }
+                session = sessions[sender]
+            else:
+                msg.body(
+                    "👋 Welcome to *Mess Monitor!*\n\n"
+                    "Please register first from the dashboard "
+                    "so I know your college and mess.\n\n"
+                    f"Register here: {DASHBOARD_LINK}"
+                )
+                return str(resp)
+      except Exception as e:
+          
+            print(f"❌ Backend call failed: {e}")
+            msg.body("⚠️ Server error. Please try again.")
+            return str(resp)
 
     name = session.get("name", "")
     college = session.get("college", "")

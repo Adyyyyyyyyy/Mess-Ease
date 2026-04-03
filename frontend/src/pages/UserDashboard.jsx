@@ -8,38 +8,43 @@ import API from "../api/api";
 // ─── Static data ──────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: Clock, title: "Smarter Timing",    desc: "Know exactly when the mess is less crowded and plan your visit at the right time." },
-  { icon: Radio, title: "Live Crowd Check",  desc: "Get real-time crowd levels and food availability before you even leave your room." },
-  { icon: Bell,  title: "Fresh Food Alerts", desc: "Get notified on WhatsApp the moment fresh food is ready or queues clear up." },
+  { icon: Clock, title: "Smarter Timing", desc: "Know exactly when the mess is less crowded and plan your visit at the right time." },
+  { icon: Radio, title: "Live Crowd Check", desc: "Get real-time crowd levels and food availability before you even leave your room." },
+  { icon: Bell, title: "Fresh Food Alerts", desc: "Get notified on WhatsApp the moment fresh food is ready or queues clear up." },
 ];
 
 const STEPS = [
-  { num: "01", label: "Register once",     sub: "Fill in your name, phone & college" },
-  { num: "02", label: "Open WhatsApp",     sub: "No app install, no sign-in needed" },
+  { num: "01", label: "Register once", sub: "Fill in your name, phone & college" },
+  { num: "02", label: "Open WhatsApp", sub: "No app install, no sign-in needed" },
   { num: "03", label: "Ask your question", sub: '"kitni line hai" or "how busy is mess"' },
-  { num: "04", label: "Walk in smart",     sub: "Crowd count, wait time instantly" },
+  { num: "04", label: "Walk in smart", sub: "Crowd count, wait time instantly" },
 ];
 
 const STATS = [
-  { value: "0 apps",    label: "to install" },
+  { value: "0 apps", label: "to install" },
   { value: "Real-time", label: "crowd data" },
-  { value: "Hinglish",  label: "supported" },
-  { value: "24/7",      label: "available" },
+  { value: "Hinglish", label: "supported" },
+  { value: "24/7", label: "available" },
 ];
 
 const CHAT = [
   { from: "user", text: "kitni line hai abhi?" },
-  { from: "bot",  text: "🟡 Medium crowd right now\n⏱ Wait time: ~10 mins\n🍽 Fresh food just arrived!" },
+  { from: "bot", text: "🟡 Medium crowd right now\n⏱ Wait time: ~10 mins\n🍽 Fresh food just arrived!" },
   { from: "user", text: "best time aane ka?" },
-  { from: "bot",  text: "✅ Come between 1:30–2:00 PM\nHistorically quieter on Fridays." },
+  { from: "bot", text: "✅ Come between 1:30–2:00 PM\nHistorically quieter on Fridays." },
 ];
 
+const MESS_OPTIONS = {
+  "SRM": ["Mess 1", "Mess 2"],
+  "KIET": ["North Mess", "South Mess"]
+};
+
 const FAQS = [
-  ["How does crowd tracking work?",    "Your mess uses a camera system that counts people in real time. The count updates every few minutes so you always see the latest situation."],
+  ["How does crowd tracking work?", "Your mess uses a camera system that counts people in real time. The count updates every few minutes so you always see the latest situation."],
   ["How do I get alerts on WhatsApp?", "Once you register, you'll be connected to Mess-Mate on WhatsApp. It sends you a message whenever fresh food is ready or the crowd clears."],
-  ["Is my data safe?",                 "Yes. Only your name, phone number and college are stored, nothing else. Your data is never shared with anyone outside your mess."],
-  ["Do I need to install any app?",    "No. Everything runs through WhatsApp, which you already have. Zero installs, zero logins."],
-  ["What languages can I use?",        "English, Hindi, or Hinglish — whatever feels natural. Mess-Mate understands all three."],
+  ["Is my data safe?", "Yes. Only your name, phone number and college are stored, nothing else. Your data is never shared with anyone outside your mess."],
+  ["Do I need to install any app?", "No. Everything runs through WhatsApp, which you already have. Zero installs, zero logins."],
+  ["What languages can I use?", "English, Hindi, or Hinglish — whatever feels natural. Mess-Mate understands all three."],
 ];
 
 const NAV_LINKS = [["features", "Features"], ["how", "How it Works"], ["bot", "Mess-Mate"], ["faq", "FAQ"]];
@@ -86,9 +91,9 @@ export default function UserDashboard() {
   const { scrollTo } = useSmoothScroll();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [form,     setForm]     = useState({ name: "", phone: "", college: "" });
-  const [loading,  setLoading]  = useState(false);
-  const [openFAQ,  setOpenFAQ]  = useState(null);
+  const [form, setForm] = useState({ name: "", phone: "", college: "", mess: "" });
+  const [loading, setLoading] = useState(false);
+  const [openFAQ, setOpenFAQ] = useState(null);
 
 
   useEffect(() => {
@@ -96,19 +101,30 @@ export default function UserDashboard() {
   }, []);
 
 
-  const handleChange  = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleNavClick = (id) => { setMenuOpen(false); scrollTo(id); };
 
   const handleSubmit = async () => {
-    if (!form.name || !form.phone || !form.college) return alert("Please fill all fields");
+    if (!form.name || !form.phone || !form.college || !form.mess) return alert("Please fill all fields including mess");
     try {
       setLoading(true);
-      await fetch("http://127.0.0.1:8000/register-user", {
+      const response = await fetch("http://127.0.0.1:8000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name: form.name,
+          mobile: form.phone,
+          college: form.college,
+          mess: form.mess || "mess1",
+          role: "student"
+        }),
       });
-      window.location.href = "https://wa.me/14155238886?text=join%20angry-former";
+      const data = await response.json();
+      if (data.success) {
+        window.location.href = "https://wa.me/14155238886?text=join%20angry-former";
+      } else {
+        alert(data.message || "Registration failed");
+      }
     } catch {
       alert("Something went wrong");
     } finally {
@@ -332,10 +348,21 @@ export default function UserDashboard() {
                 <FormField label="Your College">
                   <select name="college" onChange={handleChange} className="form-input" style={{ background: "#fff" }}>
                     <option value="">Select your college</option>
-                    <option value="ABC">SRM</option>
-                    <option value="XYZ">KIET</option>
+                    <option value="SRM">SRM</option>
+                    <option value="KIET">KIET</option>
                   </select>
                 </FormField>
+
+                {form.college && (
+                  <FormField label="Your Mess">
+                    <select name="mess" onChange={handleChange} className="form-input" style={{ background: "#fff" }}>
+                      <option value="">Select your mess</option>
+                      {MESS_OPTIONS[form.college]?.map((mess) => (
+                        <option key={mess} value={mess}>{mess}</option>
+                      ))}
+                    </select>
+                  </FormField>
+                )}
                 <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ padding: 14, fontSize: 16, marginTop: 8, width: "100%" }}>
                   {loading ? "Connecting..." : "Connect to WhatsApp →"}
                 </button>

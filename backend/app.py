@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import json
 from utils import calculate_wait_time, get_user, register_user, get_crowd_level, get_recommended_time
 
@@ -43,19 +44,35 @@ def home():
     return {"message": "Mess Backend Running"}
 
 # REGISTER
+
+
+class RegisterRequest(BaseModel):
+    name: str
+    mobile: str
+    college: str
+    mess: str = "mess1"
+    role: str = "student"
+
 @app.post("/register")
-def register(name: str, mobile: str, college: str, role: str = "student"):
-    existing = get_user(mobile)
+def register(data: RegisterRequest):
+    existing = get_user(data.mobile)
     if existing:
         return {"success": False, "message": "Mobile already registered"}
-    success = register_user(name, mobile, college, role)
+    success = register_user(data.name, data.mobile, data.college, data.mess, data.role)
     if success:
         return {
             "success": True,
             "message": "Registered successfully",
-            "user": {"name": name, "mobile": mobile, "college": college, "role": role}
+            "user": {
+                "name": data.name,
+                "mobile": data.mobile,
+                "college": data.college,
+                "mess": data.mess,
+                "role": data.role
+            }
         }
     return {"success": False, "message": "Registration failed"}
+    
 
 # LOGIN
 @app.post("/login")
@@ -67,6 +84,7 @@ def login(mobile: str):
         "verified": True,
         "name": user["name"],
         "college": user["college"],
+        "mess": user["mess"],
         "role": user["role"]
     }
 
@@ -92,24 +110,21 @@ def get_status():
 
 # 🔥 UPDATE COUNT (YOLO)
 @app.get("/update-count")
-def update_count(total: int, girls: int = 0, boys: int = 0):
+def update_count(total: int, girls: int = 0, boys: int = 0, mess: str = "mess1"):
     wait_time = calculate_wait_time(total, admin_state["extra_counters"])
 
-    data = {
-        "current": {
-            "girls": girls,
-            "boys": boys,
-            "total": total,
-            "wait_time": wait_time
-        }
+    data = read_data()
+    data[mess] = {
+        "girls": girls,
+        "boys": boys,
+        "total": total,
+        "wait_time": wait_time
     }
 
     write_data(data)
+    log_crowd(girls, boys, total, wait_time)
 
-    return {
-        "message": "Updated",
-        "data": data
-    }
+    return {"message": "Updated", "data": data}
 
 # 🔥 ADMIN CONTROL
 @app.post("/admin-update")
@@ -124,39 +139,37 @@ def admin_update(mess_closed: bool, extra_counters: int):
 async def bot(request: Request):
     try:
         form = await request.form()
-
         message = form.get("Body", "").lower().strip()
         phone = form.get("From", "unknown")
-
-        print("MESSAGE:", message)
-        print("PHONE:", phone)
 
         mobile = phone.replace("whatsapp:", "")
         user = get_user(mobile)
 
         if not user:
-            return {"reply": "👋 Welcome!\nPlease register first.\nSend: Name,College,Mess"}
+            return {"reply": "👋 You are not registered!\nPlease register at: [your website link]\n\nOnly registered students can use this bot."}
+
+        # Get mess specific to this user
+        user_mess = user["mess"]
+        user_college = user["college"]
 
         data = read_data()
-        current = data.get("current", {})
 
-        total = current.get("total", 0)
-        wait_time = current.get("wait_time", 0)
-        girls = current.get("girls", 0)
-        boys = current.get("boys", 0)
-
-        if total == 0:
-            return {"reply": "⚠️ No data available yet. Please try later."}
+        # Fetch data for user's specific mess
+        mess_data = data.get(user_mess, {})
+        total = mess_data.get("total", 0)
+        wait_time = mess_data.get("wait_time", 0)
+        girls = mess_data.get("girls", 0)
+        boys = mess_data.get("boys", 0)
 
         if admin_state["mess_closed"]:
-            return {"reply": "🚫 Mess is closed today"}
+            return {"reply": f"🚫 {user_mess} is closed today"}
 
-        # COMMANDS
         if message == "status":
             if total == 0:
-                reply = "✅ No queue right now\nWalk in directly!"
+                reply = f"✅ No queue right now at {user_mess}\nWalk in directly!"
             else:
-                reply = f"""🍽️ Mess Status
+                reply = f"""🍽️ Mess Status — {user_mess}
+👤 {user["name"]} | {user_college}
 
 👥 Line size: {total} people
 👩 Girls line: {girls} | 👦 Boys line: {boys}
@@ -164,20 +177,19 @@ async def bot(request: Request):
 📊 Crowd level: {get_crowd_level(total)}
 
 {get_recommended_time(wait_time)}
-🔢 Counters open: {admin_state["extra_counters"]}
-"""
+🔢 Counters open: {admin_state["extra_counters"]}"""
+
             return {"reply": reply}
 
         elif message == "help":
             return {
                 "reply": """📌 Commands:
-
-1. status → Check mess crowd
+1. status → Check your mess crowd
 2. help → Show commands"""
             }
 
         else:
-            return {"reply": "❓ Type 'help' to see commands"}
+            return {"reply": "❓ Type 'status' to check mess crowd"}
 
     except Exception as e:
         print("🔥 ERROR:", str(e))

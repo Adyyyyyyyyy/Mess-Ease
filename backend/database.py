@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     mobile TEXT UNIQUE NOT NULL,
     college TEXT NOT NULL,
+    mess TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT "student",
     registered_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
