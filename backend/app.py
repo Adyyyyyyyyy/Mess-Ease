@@ -1,8 +1,16 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 import json
 from utils import calculate_wait_time, get_user, register_user, get_crowd_level, get_recommended_time
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------- ADMIN STATE ----------
 admin_state = {

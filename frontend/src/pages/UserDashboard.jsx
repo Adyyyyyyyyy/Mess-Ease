@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Clock, Radio, Bell, ChefHat, CheckCircle, MessageCircle, ArrowRight, Menu, X } from "lucide-react";
 import logo from "../assets/Mess-Ease.png";
 import { useSmoothScroll } from "../ScrollComponent";
+import API from "../api/api";
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -88,10 +89,19 @@ export default function UserDashboard() {
   const [form,     setForm]     = useState({ name: "", phone: "", college: "" });
   const [loading,  setLoading]  = useState(false);
   const [openFAQ,  setOpenFAQ]  = useState(null);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("role") !== "user") navigate("/");
   }, []);
+  useEffect(() => {
+  API.get("/mess-status")
+    .then((res) => {
+      console.log("MESS STATUS:", res.data);
+      setStatus(res.data);
+    })
+    .catch((err) => console.log(err));
+}, []);
 
   const handleChange  = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleNavClick = (id) => { setMenuOpen(false); scrollTo(id); };
@@ -184,6 +194,13 @@ export default function UserDashboard() {
             Check mess crowd levels and wait times in real time straight from WhatsApp. No downloads, no logins, no hassle.
             Register once and never stand in a surprise queue again.
           </p>
+          {status && (
+  <div style={{ marginTop: 20 }}>
+    <p>👥 People: {status.people}</p>
+    <p>⏱ Wait: {status.estimated_wait}</p>
+    <p>🔥 Crowd: {status.crowd_level}</p>
+  </div>
+)}
 
           <div className="fade-up-3" style={{ marginTop: 40, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <button onClick={() => scrollTo("register")} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16 }}>
