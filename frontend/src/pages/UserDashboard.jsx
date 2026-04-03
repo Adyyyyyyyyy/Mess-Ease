@@ -7,45 +7,60 @@ import { useSmoothScroll } from "../ScrollComponent";
 // ─── Static data ──────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: Clock, title: "Smarter Timing", desc: "Know exactly when the mess is less crowded and plan your visit at the right time." },
-  { icon: Radio, title: "Live Crowd Check", desc: "Get real-time crowd levels and food availability before you even leave your room." },
-  { icon: Bell, title: "Fresh Food Alerts", desc: "Get notified on WhatsApp the moment fresh food is ready or queues clear up." },
+  { icon: Clock, title: "Smarter Timing",    desc: "Know exactly when the mess is less crowded and plan your visit at the right time." },
+  { icon: Radio, title: "Live Crowd Check",  desc: "Get real-time crowd levels and food availability before you even leave your room." },
+  { icon: Bell,  title: "Fresh Food Alerts", desc: "Get notified on WhatsApp the moment fresh food is ready or queues clear up." },
 ];
 
 const STEPS = [
-  { num: "01", label: "Register once", sub: "Fill in your name, phone & college" },
-  { num: "02", label: "Open WhatsApp", sub: "No app install, no sign-in needed" },
+  { num: "01", label: "Register once",     sub: "Fill in your name, phone & college" },
+  { num: "02", label: "Open WhatsApp",     sub: "No app install, no sign-in needed" },
   { num: "03", label: "Ask your question", sub: '"kitni line hai" or "how busy is mess"' },
-  { num: "04", label: "Walk in smart", sub: "Crowd count, wait time instantly" },
+  { num: "04", label: "Walk in smart",     sub: "Crowd count, wait time instantly" },
 ];
 
 const STATS = [
-  { value: "0 apps", label: "to install" },
+  { value: "0 apps",    label: "to install" },
   { value: "Real-time", label: "crowd data" },
-  { value: "Hinglish", label: "supported" },
-  { value: "24/7", label: "available" },
+  { value: "Hinglish",  label: "supported" },
+  { value: "24/7",      label: "available" },
 ];
 
 const CHAT = [
   { from: "user", text: "kitni line hai abhi?" },
-  { from: "bot", text: "🟡 Medium crowd right now\n⏱ Wait time: ~10 mins\n🍽 Fresh food just arrived!" },
+  { from: "bot",  text: "🟡 Medium crowd right now\n⏱ Wait time: ~10 mins\n🍽 Fresh food just arrived!" },
   { from: "user", text: "best time aane ka?" },
-  { from: "bot", text: "✅ Come between 1:30–2:00 PM\nHistorically quieter on Fridays." },
+  { from: "bot",  text: "✅ Come between 1:30–2:00 PM\nHistorically quieter on Fridays." },
 ];
 
 const FAQS = [
-  ["How does crowd tracking work?", "Your mess uses a camera system that counts people in real time. The count updates every few minutes so you always see the latest situation."],
+  ["How does crowd tracking work?",    "Your mess uses a camera system that counts people in real time. The count updates every few minutes so you always see the latest situation."],
   ["How do I get alerts on WhatsApp?", "Once you register, you'll be connected to Mess-Mate on WhatsApp. It sends you a message whenever fresh food is ready or the crowd clears."],
-  ["Is my data safe?", "Yes. Only your name, phone number and college are stored, nothing else. Your data is never shared with anyone outside your mess."],
-  ["Do I need to install any app?", "No. Everything runs through WhatsApp, which you already have. Zero installs, zero logins."],
-  ["What languages can I use?", "English, Hindi, or Hinglish — whatever feels natural. Mess-Mate understands all three."],
+  ["Is my data safe?",                 "Yes. Only your name, phone number and college are stored, nothing else. Your data is never shared with anyone outside your mess."],
+  ["Do I need to install any app?",    "No. Everything runs through WhatsApp, which you already have. Zero installs, zero logins."],
+  ["What languages can I use?",        "English, Hindi, or Hinglish — whatever feels natural. Mess-Mate understands all three."],
 ];
 
-// ✅ NAV_LINKS now use plain id strings (no # prefix) — scrollTo handles targeting
 const NAV_LINKS = [["features", "Features"], ["how", "How it Works"], ["bot", "Mess-Mate"], ["faq", "FAQ"]];
 
-// ─── Inline CSS (fonts & shared classes live in global.css) ───────────────────
-const CSS = `* { box-sizing: border-box; margin: 0; padding: 0; }`;
+// ─── Global styles ────────────────────────────────────────────────────────────
+
+const CSS = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Desktop: show nav links + Switch Role, hide hamburger */
+  .hide-mobile  { display: flex !important; }
+  .hide-desktop { display: none !important; }
+
+  @media (max-width: 768px) {
+    .hide-mobile  { display: none !important; }
+    .hide-desktop { display: flex !important; }
+    .hero-title, .section-title { font-size: 28px !important; }
+    .grid-3, .grid-4            { grid-template-columns: 1fr !important; }
+    .grid-stats                 { grid-template-columns: 1fr 1fr !important; }
+    .cta-inner                  { flex-direction: column !important; gap: 20px !important; }
+  }
+`;
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
@@ -67,24 +82,19 @@ const FormField = ({ label, children }) => (
 
 export default function UserDashboard() {
   const navigate = useNavigate();
-  const { scrollTo } = useSmoothScroll(); // ✅ single scroll utility used everywhere
+  const { scrollTo } = useSmoothScroll();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", phone: "", college: "" });
-  const [loading, setLoading] = useState(false);
-  const [openFAQ, setOpenFAQ] = useState(null);
+  const [form,     setForm]     = useState({ name: "", phone: "", college: "" });
+  const [loading,  setLoading]  = useState(false);
+  const [openFAQ,  setOpenFAQ]  = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("role") !== "user") navigate("/");
   }, []);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  // closes mobile menu then smoothly scrolls
-  const handleNavClick = (id) => {
-    setMenuOpen(false);
-    scrollTo(id);
-  };
+  const handleChange  = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleNavClick = (id) => { setMenuOpen(false); scrollTo(id); };
 
   const handleSubmit = async () => {
     if (!form.name || !form.phone || !form.college) return alert("Please fill all fields");
@@ -109,45 +119,44 @@ export default function UserDashboard() {
 
       {/* ── Navbar ─────────────────────────────────────────────────────────── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #f3f4f6", padding: "0 5%" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", height: 72 }}>
-          <img src={logo} onClick={() => scrollTo("hero")} className="float-logo" style={{ height: 58, objectFit: "contain" }} alt="Mess-Ease" />
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", height: 72 }}>
 
-          {/* Desktop nav */}
-          <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: 36 }}>
+          {/* Logo — always visible */}
+          <img
+            src={logo}
+            onClick={() => scrollTo("hero")}
+            className="float-logo"
+            style={{ height: 58, objectFit: "contain", cursor: "pointer", flexShrink: 0 }}
+            alt="Mess-Ease"
+          />
+
+          {/* Desktop: nav links (centred) + Switch Role pinned to right */}
+          <div className="hide-mobile" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 36 }}>
             {NAV_LINKS.map(([id, label]) => (
-              <button
-                key={id}
-                onClick={() => scrollTo(id)}
-                className="nav-link"
-                style={{ background: "none", border: "none", cursor: "pointer" }}
-              >
+              <button key={id} onClick={() => scrollTo(id)} className="nav-link"
+                style={{ background: "none", border: "none", cursor: "pointer" }}>
                 {label}
               </button>
             ))}
           </div>
-          <button onClick={() => navigate("/")} className="hide-mobile btn-primary" style={{ padding: "9px 22px", fontSize: 14, marginLeft: 8 }}>
+          <button onClick={() => navigate("/")} className="hide-mobile btn-primary"
+            style={{ padding: "9px 22px", fontSize: 14, flexShrink: 0 }}>
             Switch Role
           </button>
 
-          {/* Mobile hamburger */}
-          <button
-            className="hide-desktop"
-            onClick={() => setMenuOpen(!menuOpen)}
-            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
+          {/* Mobile: hamburger pinned to right */}
+          <button className="hide-desktop" onClick={() => setMenuOpen(!menuOpen)}
+            style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", alignItems: "center", justifyContent: "center" }}>
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
+        {/* Mobile dropdown menu */}
         {menuOpen && (
           <div style={{ padding: "16px 5% 20px", display: "flex", flexDirection: "column", gap: 16, borderTop: "1px solid #f3f4f6" }}>
             {NAV_LINKS.map(([id, label]) => (
-              <button
-                key={id}
-                onClick={() => handleNavClick(id)}
-                className="nav-link"
-                style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
-              >
+              <button key={id} onClick={() => handleNavClick(id)} className="nav-link"
+                style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
                 {label}
               </button>
             ))}
@@ -177,15 +186,10 @@ export default function UserDashboard() {
           </p>
 
           <div className="fade-up-3" style={{ marginTop: 40, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            {/* ✅ scrollTo("register") — targets the form section below */}
             <button onClick={() => scrollTo("register")} className="btn-primary" style={{ padding: "14px 32px", fontSize: 16 }}>
               Get Started Free
             </button>
-            {/* ✅ scrollTo("bot") — targets Mess-Mate section */}
-            <button
-              onClick={() => scrollTo("bot")}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", border: "1.5px solid #c7d2fe", borderRadius: 10, color: "#4338ca", fontWeight: 600, fontSize: 16, background: "#fff", cursor: "pointer", fontFamily: "'DM Sans','Segoe UI',sans-serif" }}
-            >
+            <button onClick={() => scrollTo("bot")} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", border: "1.5px solid #c7d2fe", borderRadius: 10, color: "#4338ca", fontWeight: 600, fontSize: 16, background: "#fff", cursor: "pointer", fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
               See how it works <ArrowRight size={16} />
             </button>
           </div>
@@ -204,25 +208,29 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* ── Features ───────────────────────────────────────────────────────── */}
-      <div id="features" style={{ padding: "88px 5%" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <SectionHeader tag="Why Mess-Ease" title="Everything you need, right on WhatsApp" />
-          <div className="grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
-            {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-              <div key={i} className="rounded-2xl p-[2px] bg-gradient-to-r from-indigo-500 to-purple-500">
-                <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-2xl hover:scale-105 transition duration-300 h-full">
-                  <Icon className="w-8 h-8 text-indigo-600 mb-4" />
-                  <h3 className="font-semibold text-lg text-gray-800">{title}</h3>
-                  <p className="text-gray-500 mt-3 text-sm leading-relaxed">{desc}</p>
+      {/* ── Off-white body ─────────────────────────────────────────────────── */}
+      <div style={{ background: "#fafaf9" }}>
+
+        {/* Features */}
+        <div id="features" style={{ padding: "88px 5%" }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+            <SectionHeader tag="Why Mess-Ease" title="Everything you need, right on WhatsApp" />
+            <div className="grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
+              {FEATURES.map(({ icon: Icon, title, desc }, i) => (
+                <div key={i} className="rounded-2xl p-[2px] bg-gradient-to-r from-indigo-500 to-purple-500">
+                  <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-2xl hover:scale-105 transition duration-300 h-full">
+                    <Icon className="w-8 h-8 text-indigo-600 mb-4" />
+                    <h3 className="font-semibold text-lg text-gray-800">{title}</h3>
+                    <p className="text-gray-500 mt-3 text-sm leading-relaxed">{desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* ── Mess-Mate highlight ─────────────────────────────────────────── */}
-        <div id="bot" style={{ padding: "0 5% 88px", marginTop: 80 }}>
+        {/* Mess-Mate highlight */}
+        <div id="bot" style={{ padding: "0 5% 88px" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <div style={{ background: "linear-gradient(135deg,#170796,#312e81,#1e1b4b)", borderRadius: 24, overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 480 }} className="grid-3">
 
@@ -247,12 +255,8 @@ export default function UserDashboard() {
                   ))}
                 </div>
 
-                {/* ✅ scrollTo("register") */}
-                <button
-                  onClick={() => scrollTo("register")}
-                  className="btn-primary"
-                  style={{ marginTop: 40, background: "#fff", color: "#170796", width: "fit-content", boxShadow: "0 4px 20px rgba(0,0,0,.2)" }}
-                >
+                <button onClick={() => scrollTo("register")} className="btn-primary"
+                  style={{ marginTop: 40, background: "#fff", color: "#170796", width: "fit-content", boxShadow: "0 4px 20px rgba(0,0,0,.2)" }}>
                   Connect to Mess-Mate →
                 </button>
               </div>
@@ -289,7 +293,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ── How it works ────────────────────────────────────────────────── */}
+        {/* How it works */}
         <div id="how" style={{ padding: "0 5% 88px" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <SectionHeader tag="Simple Setup" title="Ready in 4 steps" />
@@ -305,8 +309,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ── Registration form ────────────────────────────────────────────── */}
-        {/* ✅ id="register" — all scrollTo("register") calls land here */}
+        {/* Registration form */}
         <div id="register" style={{ padding: "0 5% 88px" }}>
           <div style={{ maxWidth: 480, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 36 }}>
@@ -339,7 +342,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ── FAQ ─────────────────────────────────────────────────────────── */}
+        {/* FAQ */}
         <div id="faq" style={{ padding: "0 5% 88px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto" }}>
             <SectionHeader tag="FAQ" title="Questions? We've got answers." />
@@ -366,7 +369,7 @@ export default function UserDashboard() {
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 48 }} className="grid-3">
 
             <div>
-              <img src={logo} onClick={() => scrollTo("hero")} style={{ height: 84, objectFit: "contain", filter: "brightness(0) invert(1)", marginBottom: 16 }} alt="Mess-Ease" />
+              <img src={logo} onClick={() => scrollTo("hero")} style={{ height: 84, objectFit: "contain", filter: "brightness(0) invert(1)", marginBottom: 16, cursor: "pointer" }} alt="Mess-Ease" />
               <p style={{ fontSize: 15, color: "rgba(255,255,255,.6)", lineHeight: 1.7, maxWidth: 300 }}>
                 A crowd management system for college mess halls — powered by WhatsApp and real-time data, built to save student time.
               </p>
@@ -375,15 +378,11 @@ export default function UserDashboard() {
             <div>
               <h4 style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,.5)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 20 }}>Navigation</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {/* ✅ Footer nav also uses scrollTo */}
                 {NAV_LINKS.map(([id, label]) => (
-                  <button
-                    key={id}
-                    onClick={() => scrollTo(id)}
+                  <button key={id} onClick={() => scrollTo(id)}
                     style={{ color: "rgba(255,255,255,.65)", fontSize: 15, background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans','Segoe UI',sans-serif", transition: "color .2s" }}
                     onMouseEnter={e => e.currentTarget.style.color = "#fff"}
-                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.65)"}
-                  >
+                    onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,.65)"}>
                     {label}
                   </button>
                 ))}
@@ -395,11 +394,8 @@ export default function UserDashboard() {
               <p style={{ fontSize: 15, color: "rgba(255,255,255,.65)", lineHeight: 1.7 }}>
                 Built for students.<br />Connect with us on WhatsApp to try Mess-Mate at your campus.
               </p>
-              {/* ✅ scrollTo("register") */}
-              <button
-                onClick={() => scrollTo("register")}
-                style={{ marginTop: 20, background: "#fff", color: "#0f0a2e", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
-              >
+              <button onClick={() => scrollTo("register")}
+                style={{ marginTop: 20, background: "#fff", color: "#0f0a2e", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 Get Access
               </button>
             </div>
