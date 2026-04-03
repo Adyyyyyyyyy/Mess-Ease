@@ -6,14 +6,14 @@ import threading
 
 model = YOLO("yolov8n.pt")
 
-cap = cv2.VideoCapture("http://10.60.81.72:4747/video")
+cap = cv2.VideoCapture("http://192.168.1.33:4747/mjpegfeed")
 
 if not cap.isOpened():
     print("Error: Cannot open camera")
     exit()
 
 # Member 2's API
-API_URL = "http://10.60.81.226:8000/update-count"
+API_URL = "http://10.240.84.226:8000/update-count"
 
 # Frame dimensions
 ret, sample_frame = cap.read()
