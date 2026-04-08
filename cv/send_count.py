@@ -6,7 +6,7 @@ import threading
 
 model = YOLO("yolov8n.pt")
 
-cap = cv2.VideoCapture("http://10.97.168.181:4747/mjpegfeed")
+cap = cv2.VideoCapture("http://192.168.1.33:4747/mjpegfeed")
 
 if not cap.isOpened():
     print("Error: Cannot open camera")

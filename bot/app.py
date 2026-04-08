@@ -17,6 +17,8 @@ USE_MOCK_BACKEND = os.getenv("USE_MOCK_BACKEND", "false").lower() == "true"
 
 # ─── In-memory session store ──────────────────────────────────────────────────
 sessions = {}
+# Tracks users waiting for gender input
+awaiting_gender = {}
 
 # ─── Intent detection (keyword based) ────────────────────────────────────────
 def detect_intent(message):
@@ -53,17 +55,23 @@ def detect_intent(message):
     return "unknown"
 
 
-# ─── Fetch mess status from Member 2's backend ────────────────────────────────
 def get_mess_status(college, mess):
+    print(f"🔍 USE_MOCK_BACKEND: {USE_MOCK_BACKEND}")
+    print(f"🔍 BACKEND_BASE_URL: {BACKEND_BASE_URL}")
     if USE_MOCK_BACKEND:
         return {
             "success": True,
             "data": {
-                "people": 52,
-                "estimated_wait": "7 minutes",
-                "crowd_level": "Moderate",
-                "next_fresh_item": "4 minutes",
-                "closing_in": "25 minutes"
+                "people": 9,
+                "girls": 5,
+                "boys": 4,
+                "girls_wait": 0,
+                "boys_wait": 0,
+                "estimated_wait": "0 minutes",
+                "crowd_level": "Low",
+                "recommended_time": "🟢 Walk in directly, no wait!",
+                "next_fresh_item": "Not available",
+                "closing_in": "Not available"
             }
         }
 
@@ -75,13 +83,19 @@ def get_mess_status(college, mess):
         )
         response.raise_for_status()
         data = response.json()
+        print(f"🔥 Backend data: {data}")
 
         return {
             "success": True,
             "data": {
-                "people": data.get("people", "N/A"),
+                "people": data.get("people", 0),
+                "girls": data.get("girls", 0),
+                "boys": data.get("boys", 0),
+                "girls_wait": data.get("girls_wait", 0),
+                "boys_wait": data.get("boys_wait", 0),
                 "estimated_wait": data.get("estimated_wait", "N/A"),
                 "crowd_level": data.get("crowd_level", "N/A"),
+                "recommended_time": data.get("recommended_time", "Go now!"),
                 "next_fresh_item": data.get("next_fresh_item", "Not available"),
                 "closing_in": data.get("closing_in", "Not available")
             }
@@ -201,9 +215,50 @@ def whatsapp_reply():
     college = session.get("college", "")
     mess = session.get("mess", "")
 
+  # Check if waiting for gender response
+    if sender in awaiting_gender:
+        gender_input = incoming_msg.lower().strip()
+
+        if any(w in gender_input for w in ["boy", "boys", "male", "gents", "lad", "bhai", "bro"]):
+            gender = "boys"
+        elif any(w in gender_input for w in ["girl", "girls", "female", "ladies", "di", "behen"]):
+            gender = "girls"
+        else:
+            msg.body("❓ Please reply with *boys* or *girls* to get your slot.")
+            return str(resp)
+
+        # Remove from awaiting
+        del awaiting_gender[sender]
+
+        # Get slot from backend
+        try:
+            slot_res = requests.get(
+                f"{BACKEND_BASE_URL}/get-slot",
+                params={"gender": gender},
+                timeout=5
+            )
+            slot_data = slot_res.json()
+
+            if slot_data.get("success"):
+                slot_time = slot_data["slot"]
+                msg.body(
+                    f"🎟️ Your Slot Confirmed!\n\n"
+                    f"{'👦 Boys' if gender == 'boys' else '👩 Girls'} Counter\n"
+                    f"⏰ Come at: *{slot_time} PM*\n\n"
+                    f"You'll find max 5-6 people ahead of you.\n"
+                    f"Walk in smart! 🍽️"
+                )
+            else:
+                msg.body("⚠️ No slots available in current lunch window.")
+        except Exception as e:
+            print(f"Slot error: {e}")
+            msg.body("⚠️ Could not get slot. Try again.")
+
+        return str(resp)
+
     intent = detect_intent(incoming_msg)
 
-    # ── Greeting ───────────────────────────────────────────────────────────
+    # ── Greeting ────────────────────────────────────────────────────────
     if intent == "greeting":
         msg.body(
             f"Hey {name}! 👋\n\n"
@@ -215,71 +270,69 @@ def whatsapp_reply():
             f"• help"
         )
 
-    # ── Mess status ────────────────────────────────────────────────────────
+    # ── Mess status ──────────────────────────────────────────────────────
     elif intent == "mess_status":
         result = get_mess_status(college, mess)
+        print(f"🎯 Result: {result}")
 
         if result["success"]:
             data = result["data"]
+            print(f"🎯 Data: {data}")
+
+            girls = data.get("girls", 0)
+            boys = data.get("boys", 0)
+            girls_wait = data.get("girls_wait", 0)
+            boys_wait = data.get("boys_wait", 0)
+
+            # Ask for gender to assign slot
+            awaiting_gender[sender] = True
+
             msg.body(
                 f"🍽️ Mess Status — {mess}\n"
                 f"🏫 {college}\n\n"
-                f"👥 People inside: {data['people']}\n"
-                f"⏱️ Estimated wait: {data['estimated_wait']}\n"
-                f"📊 Crowd level: {data['crowd_level']}\n"
-                f"🍳 Next fresh item in: {data['next_fresh_item']}\n"
-                f"🔒 Closing in: {data['closing_in']}"
+                f"👩 Girls Queue: {girls} people | ⏱️ Wait: {girls_wait} mins\n"
+                f"👦 Boys Queue: {boys} people | ⏱️ Wait: {boys_wait} mins\n\n"
+                f"📊 Crowd level: {data['crowd_level']}\n\n"
+                f"🎟️ Want your personal slot?\n"
+                f"Reply with *boys* or *girls*"
             )
         else:
-            msg.body(
-                "⚠️ Could not fetch mess data right now.\n\n"
-                "Please try again in a moment."
-            )
+            msg.body("⚠️ Could not fetch mess data. Try again.")
 
-    # ── Change setup ───────────────────────────────────────────────────────
+    # ── Change setup ─────────────────────────────────────────────────────
     elif intent == "change_setup":
         msg.body(
-            "🔄 To change your college or mess, "
-            "update your details from the dashboard.\n\n"
+            f"🔄 To change your college or mess, "
+            f"update from the dashboard.\n\n"
             f"Dashboard: {DASHBOARD_LINK}"
         )
 
-    # ── Help ───────────────────────────────────────────────────────────────
+    # ── Help ─────────────────────────────────────────────────────────────
     elif intent == "help":
         msg.body(
             f"📋 What can I do?\n\n"
-            f"Just type naturally:\n"
             f"• hi — greeting\n"
-            f"• mess status — crowd + wait time\n"
-            f"• how busy is mess — same\n"
-            f"• kitni line hai — Hinglish works too\n"
+            f"• mess status — crowd + slot booking\n"
+            f"• kitni line hai — Hinglish works\n"
             f"• change my mess — update setup\n"
             f"• help — show this menu\n\n"
             f"📍 Current: {college} → {mess}"
         )
 
-    # ── Unknown → try showing mess status anyway ───────────────────────────
+    # ── Unknown ──────────────────────────────────────────────────────────
     else:
         result = get_mess_status(college, mess)
-
         if result["success"]:
             data = result["data"]
+            awaiting_gender[sender] = True
             msg.body(
-                f"Not sure what you meant, but here's your mess update:\n\n"
-                f"🍽️ {mess} — {college}\n"
-                f"👥 People: {data['people']}\n"
-                f"⏱️ Wait: {data['estimated_wait']}\n"
-                f"📊 Crowd: {data['crowd_level']}\n\n"
-                f"Type *help* to see all commands."
+                f"🍽️ {mess} — {college}\n\n"
+                f"👩 Girls: {data.get('girls', 0)} people\n"
+                f"👦 Boys: {data.get('boys', 0)} people\n\n"
+                f"Reply *boys* or *girls* for your slot!"
             )
         else:
-            msg.body(
-                "❓ Didn't catch that.\n\n"
-                "Try:\n"
-                "• mess status\n"
-                "• kitni line hai\n"
-                "• help"
-            )
+            msg.body("❓ Type *help* to see commands.")
 
     return str(resp)
 
